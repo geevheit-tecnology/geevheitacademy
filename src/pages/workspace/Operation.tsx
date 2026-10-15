@@ -1,3 +1,7 @@
+import {
+  StageNotice,
+  type StageNoticeData,
+} from "../../components/StageNotice";
 import { missionProgress } from "../../domain/mission";
 import { RoutePlanner } from "../../components/RoutePlanner";
 import { StageGuide } from "../../components/StageGuide";
@@ -9,7 +13,7 @@ import {
   Cloud,
   Download,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Link,
   useLocation,
@@ -45,6 +49,8 @@ export function Operation() {
   const { mission, busy, sync, pending, load, save, clearDraft } =
     useMissionSync(user?.uid, id, setMessage);
   const [showPlanner, setShowPlanner] = useState(false);
+  const [notice, setNotice] = useState<StageNoticeData | null>(null);
+  const closeNotice = useCallback(() => setNotice(null), []);
   const [lastCompleted, setLastCompleted] = useState("");
   const controlColumn = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -67,8 +73,16 @@ export function Operation() {
   const result = score(m);
   function transition() {
     try {
-      void save(advance(m)).then((success) => {
-        if (success) setLastCompleted(stages[m.step]);
+      const next = advance(m);
+      void save(next).then((success) => {
+        if (success) {
+          setLastCompleted(stages[m.step]);
+          setNotice({
+            id: Date.now(),
+            step: next.step,
+            completed: next.completed,
+          });
+        }
       });
     } catch (e) {
       setMessage(errorMessage(e));
@@ -93,6 +107,7 @@ export function Operation() {
   }
   return (
     <div className="operation-page">
+      <StageNotice notice={notice} onClose={closeNotice} />
       <div className="page-heading">
         <div>
           <span className="eyebrow">
@@ -202,6 +217,13 @@ export function Operation() {
               step={m.step}
               completed={m.completed}
               lastCompleted={lastCompleted}
+              onExplain={() =>
+                setNotice({
+                  id: Date.now(),
+                  step: m.step,
+                  completed: m.completed,
+                })
+              }
             />
             <JourneyControls
               mission={m}

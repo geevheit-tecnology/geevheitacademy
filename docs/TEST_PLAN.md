@@ -33,3 +33,5 @@ Teste Chrome com APIs reais e Firebase aprovado: seleção de RJ/Resende via IBG
 Fluxo completo Chrome/Firebase real aprovado após a revisão: movimento gradual nas quatro etapas, vinte checklists, inspeção antes da continuação, resultado/histórico e perfil sem Firebase/Authentication/UID. Conta e dados sintéticos removidos. Capturas em docs/qa/travel-stage-9.png e travel-stage-12.png.
 
 Layout compacto validado em Chrome 1366×768 e 390×844: fluxo completo e checagens geométricas confirmaram que o canvas do mapa permanece dentro da viewport ao avançar a viagem no desktop e ao rolar até o checklist no celular. Build TypeScript/Vite aprovado. Não houve mudança de cálculos ou regras de negócio. Conta e documentos temporários removidos.
+
+Explicação temporária validada no Chrome: aparece após cada avanço salvo, desaparece automaticamente (checagem com timeout de 7 segundos para timer de 5), reabre por Explicação rápida e fecha pelo X. Fluxo completo, perfil, mapa visível e limpeza dos dados de QA aprovados. Build TypeScript/Vite aprovado.

@@ -18,6 +18,6 @@ PRD, TASKS, ARCHITECTURE, DESIGN_SYSTEM, BUSINESS_RULES, FIREBASE_SETUP, FIRESTO
 
 Documentos, valores e rotas são demonstrativos. Não há rastreamento real ou emissão fiscal. Regras educativas de jornada não certificam conformidade legal.
 
-Preview final: https://geevheitacademy-21ulx82ax-geevheits-projects.vercel.app
+Preview final: https://geevheitacademy-ddlgt6puh-geevheits-projects.vercel.app
 
 Mapas e trechos: consulte docs/MAPS_AND_ROUTES.md. Origem/destino e pontos intermediários são configuráveis; caminhão percorre os trechos na etapa Transporte, com cards explicativos em cada passo.

@@ -176,6 +176,20 @@ try {
         exact: true,
       })
       .click();
+    await expect(page.locator(".stage-notice")).toBeVisible({ timeout: 20000 });
+    if (step === 1) {
+      await expect(page.locator(".stage-notice")).not.toBeVisible({
+        timeout: 7000,
+      });
+      await page
+        .getByRole("button", { name: "Explicação rápida", exact: true })
+        .click();
+      await expect(page.locator(".stage-notice")).toBeVisible();
+      await page
+        .getByRole("button", { name: "Fechar explicação da etapa" })
+        .click();
+      await expect(page.locator(".stage-notice")).not.toBeVisible();
+    }
   }
   await expect(
     page.getByRole("button", { name: "Treinamento concluído" }),

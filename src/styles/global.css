@@ -2035,3 +2035,96 @@ summary {
     height: clamp(170px, 26dvh, 230px);
   }
 }
+.stage-notice {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  width: min(430px, calc(100vw - 28px));
+  padding: 14px 15px 17px;
+  background: #f6faed;
+  border: 1px solid #afc98a;
+  border-radius: 10px;
+  box-shadow: 0 10px 35px #18392f26;
+  color: #194c3c;
+  overflow: hidden;
+  animation: notice-in 0.18s ease-out;
+}
+.stage-notice > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.stage-notice > div {
+  min-width: 0;
+  flex: 1;
+}
+.stage-notice strong {
+  font-size: 13px;
+}
+.stage-notice p {
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 5px 0 0;
+  color: #4b6553;
+}
+.stage-notice > button {
+  display: flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+}
+.stage-notice-timer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #8bad58;
+  width: 100%;
+  transform-origin: left;
+  animation: notice-timer 5s linear forwards;
+}
+.stage-explain-button {
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  font-size: 10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin: 0 0 7px;
+  color: #54733f;
+}
+.stage-explain-button:hover {
+  color: #194c3c;
+}
+@keyframes notice-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes notice-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-notice,
+  .stage-notice-timer {
+    animation: none;
+  }
+}
+@media print {
+  .stage-notice,
+  .stage-explain-button {
+    display: none;
+  }
+}

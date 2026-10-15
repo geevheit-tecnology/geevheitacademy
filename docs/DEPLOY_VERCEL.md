@@ -27,3 +27,5 @@ Toolbar removida no projeto por API oficial Vercel: enablePreviewFeedback=false 
 Revisão de movimento por etapas e perfil publicada READY em 15/10/2026: https://geevheitacademy-iaewjw3jl-geevheits-projects.vercel.app . Deployment dpl_J6QKPd8P8pm215PhjW3zr6FAeKn1. Toolbar desligada no projeto para preview/produção. Build remoto aprovado.
 
 Layout operacional compacto publicado READY em 15/10/2026: https://geevheitacademy-21ulx82ax-geevheits-projects.vercel.app . Deployment dpl_9KXCq7RHx33Ewg1Cqj9tdnQDBt1u. Build remoto aprovado.
+
+Explicações transitórias de etapa publicadas READY: https://geevheitacademy-ddlgt6puh-geevheits-projects.vercel.app . Deployment dpl_13wXcNdJphF2pfnfWPyGZ6uKRKX3. Build remoto aprovado e comportamento validado no Chrome local.

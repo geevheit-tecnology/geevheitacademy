@@ -5,10 +5,12 @@ export function StageGuide({
   step,
   completed,
   lastCompleted,
+  onExplain,
 }: {
   step: number;
   completed: boolean;
   lastCompleted: string;
+  onExplain: () => void;
 }) {
   const [title, action, impact] = stageGuidance[step];
   return (
@@ -23,6 +25,13 @@ export function StageGuide({
         <BookOpen size={15} /> PASSO {step + 1} / 20 • {stages[step]}
       </span>
       <h2>{completed ? "Treinamento concluído" : title}</h2>
+      <button
+        type="button"
+        className="stage-explain-button"
+        onClick={onExplain}
+      >
+        Explicação rápida
+      </button>
       <div className="guide-cards">
         <article>
           <Target size={20} />
