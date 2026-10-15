@@ -13,3 +13,14 @@
       Conclusão exige evidência em TEST_PLAN e DEPLOY_VERCEL, não apenas existência de código.
 
 - [ ] P2: definir remoto GitHub e publicar o código. Repositório local inicializado; nenhum remoto informado.
+
+## Revisão solicitada: mapa, trechos e cards
+
+- [x] Mapa Leaflet/OpenStreetMap, caminhão e armazéns em SVG.
+- [x] Estados/cidades IBGE e geocodificação Photon por município e UF.
+- [x] Percurso OSRM com pontos intermediários e distâncias aplicadas ao orçamento.
+- [x] Movimento por trecho, progresso persistido e bloqueios operacionais.
+- [x] Cards de orientação em todas as vinte etapas.
+- [x] 18 testes locais, quatro testes de regras e build.
+- [x] Teste ponta a ponta final com APIs externas e Firebase reais.
+- [x] Preview geográfico publicado READY: https://geevheitacademy-pc3hiy1n5-geevheits-projects.vercel.app

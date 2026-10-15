@@ -54,7 +54,7 @@ export function useMissionSync(
     void load();
   }, [load]);
   async function save(next: Mission) {
-    if (!uid || lock.current) return;
+    if (!uid || lock.current) return false;
     lock.current = true;
     setBusy(true);
     setSync("Sincronizando…");
@@ -64,6 +64,7 @@ export function useMissionSync(
       const saved = await repository.save(uid, next);
       setMission(saved);
       clearDraft();
+      return true;
     } catch (e) {
       setMission(previous);
       setPending(next);
@@ -76,6 +77,7 @@ export function useMissionSync(
           `${errorMessage(e)} O navegador também bloqueou o cache. Mantenha esta página aberta e reenvie a alteração.`,
         );
       }
+      return false;
     } finally {
       lock.current = false;
       setBusy(false);

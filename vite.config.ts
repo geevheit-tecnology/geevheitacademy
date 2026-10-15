@@ -21,6 +21,7 @@ export default defineConfig({
             id.includes("node_modules/firebase")
           )
             return "firebase-core";
+          if (id.includes("node_modules/leaflet")) return "maps";
           if (id.includes("node_modules/zod")) return "validation";
           if (id.includes("node_modules")) return "vendor";
         },

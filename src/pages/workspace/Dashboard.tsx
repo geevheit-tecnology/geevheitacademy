@@ -55,7 +55,12 @@ export function Dashboard() {
               <p>
                 {m.input.origin} → {m.input.destination}
               </p>
-              <RouteMap progress={m.step / 19} />
+              <RouteMap
+                input={m.input}
+                progress={
+                  m.step < 8 ? 0 : m.step > 8 ? 1 : (m.journeyProgress ?? 0)
+                }
+              />
               <div className="progress">
                 <div style={{ width: `${(m.step / 20) * 100}%` }} />
               </div>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { routePlanSchema, nextLegProgress } from "./route";
 export const stages = [
   "Comercial",
   "Planejamento",
@@ -54,6 +55,7 @@ export const inputSchema = z.object({
   shiftHours: z.number().finite().min(0.25),
   restHours: z.number().finite().nonnegative(),
   deadline: z.number().finite().positive(),
+  routePlan: routePlanSchema.optional(),
 });
 export type MissionInput = z.infer<typeof inputSchema>;
 export const defaults: MissionInput = {
@@ -174,6 +176,7 @@ export interface Mission {
   revision: number;
   schemaVersion: 1;
   completed: boolean;
+  journeyProgress?: number;
 }
 export const requirements: Record<number, string[]> = {
   0: ["Contrato negociado"],
@@ -281,6 +284,10 @@ export function advance(m: Mission): Mission {
     m.occurrences.some((o) => !o.resolved && occurrenceTypes[o.kind].blocking)
   )
     throw Error("Resolva as ocorrências impeditivas antes de avançar.");
+  if (m.step === 8 && m.input.routePlan && (m.journeyProgress ?? 0) < 1)
+    throw Error(
+      "Percorra todos os trechos da viagem antes de concluir Transporte.",
+    );
   if (!(requirements[m.step] ?? []).every((_, i) => m.checks[`${m.step}:${i}`]))
     throw Error("Conclua o checklist desta etapa.");
   return {
@@ -332,5 +339,24 @@ export function resolveOccurrence(
     occurrences: m.occurrences.map((o) =>
       o.id === id ? { ...o, resolved: true, action: action.slice(0, 500) } : o,
     ),
+  };
+}
+
+export function travelNextLeg(m: Mission): Mission {
+  if (m.completed || m.step !== 8)
+    throw Error("A movimentação só é permitida na etapa Transporte.");
+  if (
+    m.occurrences.some((o) => !o.resolved && occurrenceTypes[o.kind].blocking)
+  )
+    throw Error(
+      "Resolva a ocorrência impeditiva antes de movimentar o caminhão.",
+    );
+  if (!m.input.routePlan)
+    throw Error("Configure os trechos antes de iniciar a viagem.");
+  if ((m.journeyProgress ?? 0) >= 1)
+    throw Error("Todos os trechos já foram percorridos.");
+  return {
+    ...m,
+    journeyProgress: nextLegProgress(m.input.routePlan, m.journeyProgress ?? 0),
   };
 }

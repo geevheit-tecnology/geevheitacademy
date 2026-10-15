@@ -19,3 +19,5 @@ O assistente CLI de variáveis preview retornou git_branch_required mesmo omitin
 Preview final confirmado READY em 15/10/2026: https://geevheitacademy-l8369xwad-geevheits-projects.vercel.app . Deployment dpl_9dFSJuSFni39yKFDjzqkSm9GKpdr. Build remoto TypeScript/Vite concluído. Esta é a versão final validada; a URL estável inicial corresponde ao primeiro build.
 
 Authentication iniciado pelo proprietário no console e confirmado via API: signIn.email.enabled=true e passwordRequired=true. Domínios autorizados incluem localhost, Firebase Hosting e geevheitacademy.vercel.app. Publicação inicial confirmada READY em https://geevheitacademy.vercel.app (deployment dpl_ECsDqEyyMkhVydJM6gfPmuHDvCXc). A CLI tratou o primeiro deploy sem target como produção; os próximos usam --target preview explicitamente.
+
+Revisão de mapas publicada em 15/10/2026, READY: https://geevheitacademy-pc3hiy1n5-geevheits-projects.vercel.app . Deployment dpl_9Vs7gRWLo3xErtw1PEEfTdSGCJSp. Inclui Leaflet/OSM, IBGE/Photon/OSRM, trechos e cards de orientação. Este preview substitui o anterior como versão de revisão atual.

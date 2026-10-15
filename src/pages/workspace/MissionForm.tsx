@@ -1,3 +1,4 @@
+import { RoutePlanner } from "../../components/RoutePlanner";
 import { useMissionRepository } from "../../services/ServicesContext";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
@@ -16,7 +17,8 @@ import {
   saveSettings,
 } from "../../repositories/FirestoreMissionRepository";
 import { type WorkspaceContext } from "./shared";
-const labels: Record<keyof MissionInput, string> = {
+type ParameterKey = Exclude<keyof MissionInput, "routePlan">;
+const labels: Record<ParameterKey, string> = {
   name: "Nome da missão",
   client: "Cliente",
   origin: "Origem",
@@ -72,11 +74,12 @@ export function MissionForm({ settings = false }: { settings?: boolean }) {
       if (!parsed.success)
         throw Error(
           parsed.error.issues
-            .map(
-              (i) =>
-                `${labels[i.path[0] as keyof MissionInput]}: valor inválido`,
-            )
+            .map((i) => `${labels[i.path[0] as ParameterKey]}: valor inválido`)
             .join("; "),
+        );
+      if (!settings && !parsed.data.routePlan)
+        throw Error(
+          "Configure os trechos e clique em Calcular e aplicar rota antes de criar a missão.",
         );
       if (settings) {
         await saveSettings(user.uid, parsed.data);
@@ -112,9 +115,10 @@ export function MissionForm({ settings = false }: { settings?: boolean }) {
         </div>
       </div>
       <form className="panel mission-form" onSubmit={submit}>
+        <RoutePlanner value={values} onChange={setValues} disabled={busy} />
         <h2>Dados e parâmetros de treinamento</h2>
         <div className="form-grid">
-          {(Object.keys(defaults) as (keyof MissionInput)[]).map((key) => (
+          {(Object.keys(defaults) as ParameterKey[]).map((key) => (
             <label key={key}>
               {labels[key]}
               {key === "route" ? (
@@ -122,11 +126,13 @@ export function MissionForm({ settings = false }: { settings?: boolean }) {
                   value={values.route}
                   onChange={(e) => {
                     const route = e.target.value as MissionInput["route"];
+                    const { routePlan: previousPlan, ...rest } = values;
+                    void previousPlan;
                     setValues({
-                      ...values,
+                      ...rest,
                       route,
                       ...{
-                        distance: routes[route].distance,
+                        distance: values.distance,
                         speed: routes[route].speed,
                         toll: routes[route].toll,
                       },
@@ -155,6 +161,11 @@ export function MissionForm({ settings = false }: { settings?: boolean }) {
                 </select>
               ) : (
                 <input
+                  readOnly={
+                    key === "origin" ||
+                    key === "destination" ||
+                    key === "distance"
+                  }
                   required
                   maxLength={100}
                   type={typeof defaults[key] === "number" ? "number" : "text"}

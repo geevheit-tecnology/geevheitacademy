@@ -19,3 +19,9 @@ Para reproduzir: `firebase emulators:exec --only auth,firestore --project demo-t
 ## Firebase real confirmado
 
 Após o proprietário iniciar Authentication, a API confirmou emailEnabled=true. `node scripts/browser-qa.mjs` terminou com sucesso no Chrome contra transportsim360-academy: cadastro, sessão após reload, ocorrência/resolução, vinte etapas, relatório 92/100, histórico e retomada em contexto independente, logout e zero erros JavaScript. Conta e documentos temporários removidos ao final. O teste usou servidor local com SDK apontando para a nuvem real; não visitou a URL Vercel. Capturas em docs/qa incluem resultado desktop e operação mobile.
+
+## Atualização de mapas e trechos — 15/10/2026
+
+`npm test`: 18 testes aprovados, incluindo interpolação geográfica, progressão ponderada dos trechos, seleção da geometria retornada pela API, bloqueio por pane e proibição de concluir viagem incompleta. `npm run test:rules`: quatro testes aprovados, incluindo persistência de routePlan, limite de progresso e bloqueio de alteração de percurso após saída. Build TypeScript/Vite aprovado com Leaflet separado em bundle próprio.
+
+Teste Chrome com APIs reais e Firebase aprovado: seleção de RJ/Resende via IBGE; geocodificação Photon; percurso São Paulo–Resende–Rio via OSRM; aplicação de distância ao orçamento; dois trechos percorridos; cards verificados nas vinte etapas; resultado/histórico em segundo contexto; logout. Nenhum erro JavaScript e nenhum overflow no celular. Conta e missão temporárias removidas. Captura do mapa e dos cards em docs/qa/road-map-truck.png.

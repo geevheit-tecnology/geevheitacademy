@@ -1,3 +1,6 @@
+import { RoutePlanner } from "../../components/RoutePlanner";
+import { StageGuide } from "../../components/StageGuide";
+import { JourneyControls } from "../../components/JourneyControls";
 import {
   AlertTriangle,
   ArrowRight,
@@ -40,6 +43,8 @@ export function Operation() {
   const id = location.pathname.split("/").at(-1)!;
   const { mission, busy, sync, pending, load, save, clearDraft } =
     useMissionSync(user?.uid, id, setMessage);
+  const [showPlanner, setShowPlanner] = useState(false);
+  const [lastCompleted, setLastCompleted] = useState("");
   const [tab, setTab] = useState("operacao");
   const [kind, setKind] = useState<OccurrenceKind>("pane");
   const [description, setDescription] = useState("");
@@ -57,7 +62,9 @@ export function Operation() {
   const result = score(m);
   function transition() {
     try {
-      void save(advance(m));
+      void save(advance(m)).then((success) => {
+        if (success) setLastCompleted(stages[m.step]);
+      });
     } catch (e) {
       setMessage(errorMessage(e));
     }
@@ -151,9 +158,54 @@ export function Operation() {
         ))}
       </div>
       {tab === "operacao" && (
+        <>
+          <StageGuide
+            step={m.step}
+            completed={m.completed}
+            lastCompleted={lastCompleted}
+          />
+          {m.step < 8 && !m.completed && (
+            <div className="route-edit-actions">
+              <button
+                className="secondary"
+                disabled={busy || !!pending}
+                onClick={() => setShowPlanner(!showPlanner)}
+              >
+                {showPlanner
+                  ? "Fechar configuração de trechos"
+                  : "Configurar trechos"}
+              </button>
+              <span>
+                Origem, destino e pontos intermediários • edição disponível
+                antes da saída
+              </span>
+            </div>
+          )}
+          {showPlanner && m.step < 8 && (
+            <div className="panel">
+              <RoutePlanner
+                value={m.input}
+                disabled={busy || !!pending}
+                onChange={(input) => void save({ ...m, input })}
+              />
+            </div>
+          )}
+        </>
+      )}
+      {tab === "operacao" && (
         <div className="operation-grid">
           <section>
-            <RouteMap progress={m.step / 19} />
+            <RouteMap
+              input={m.input}
+              progress={
+                m.step < 8 ? 0 : m.step > 8 ? 1 : (m.journeyProgress ?? 0)
+              }
+            />
+            <JourneyControls
+              mission={m}
+              disabled={busy || !!pending || m.completed}
+              onChange={(next) => void save(next)}
+            />
             <div className="panel">
               <div className="panel-heading">
                 <span className="eyebrow">ETAPA {m.step + 1} DE 20</span>
@@ -478,7 +530,13 @@ export function Operation() {
                 "Reiniciar etapas e ocorrências? Os parâmetros serão mantidos.",
               )
             )
-              void save({ ...m, step: 0, checks: {}, occurrences: [] });
+              void save({
+                ...m,
+                step: 0,
+                journeyProgress: 0,
+                checks: {},
+                occurrences: [],
+              });
           }}
         >
           Reiniciar missão atual

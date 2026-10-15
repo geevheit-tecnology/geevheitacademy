@@ -11,3 +11,7 @@ São vinte etapas sequenciais. Cada uma exige seu checklist. Pane, documento pen
 Pontuação: base 100, menos processo incompleto (até 20), penalidades dos eventos, cinco por evento não resolvido, uma por hora iniciada de atraso (máximo 15), dez por prejuízo. Limite inferior zero. Relatório discrimina descontos. Checklists e decisões são autodeclarados em contexto educativo; pontuação não é certificação antifraude.
 
 Dificuldade indica exercícios sugeridos, sem eventos automáticos aleatórios: iniciante ciclo básico; intermediário documento/atraso; avançado pane/divergência/POD. O instrutor controla o registro. A viagem avança por decisões de etapa, sem rastreamento real.
+
+## Percurso geográfico
+
+Agora a distância aplicada vem dos trechos calculados via OSRM. Os valores 430/485/460 km são parâmetros históricos, não corredores impostos ao mapa. Consulte MAPS_AND_ROUTES.md para edição, estratégias, progresso e limites do perfil rodoviário. Os cards explicam cada decisão durante a operação.

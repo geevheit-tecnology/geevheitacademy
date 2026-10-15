@@ -65,3 +65,51 @@ it("valida missão, revisão e parâmetros imutáveis", async () => {
     ),
   );
 });
+it("salva trechos, valida coordenadas e bloqueia mudança de rota após saída", async () => {
+  const db = env.authenticatedContext("routes-user").firestore();
+  const routePlan = {
+    stops: [
+      {
+        name: "São Paulo",
+        uf: "SP",
+        cityId: 3550308,
+        lat: -23.55,
+        lng: -46.63,
+      },
+      {
+        name: "Rio de Janeiro",
+        uf: "RJ",
+        cityId: 3304557,
+        lat: -22.9,
+        lng: -43.17,
+      },
+    ],
+    geometry: [
+      { lat: -23.55, lng: -46.63 },
+      { lat: -22.9, lng: -43.17 },
+    ],
+    legs: [{ distanceKm: 450, durationHours: 7 }],
+    provider: "OSRM",
+    calculatedAt: new Date().toISOString(),
+  };
+  const m = { ...createMission(defaults), revision: 1 };
+  const ref = doc(db, "users/routes-user/missions", m.id);
+  await assertSucceeds(setDoc(ref, m));
+  await assertSucceeds(
+    updateDoc(ref, {
+      input: { ...defaults, routePlan, distance: 450 },
+      revision: 2,
+    }),
+  );
+  await assertFails(updateDoc(ref, { journeyProgress: 2, revision: 3 }));
+  await assertSucceeds(
+    updateDoc(ref, { step: 8, journeyProgress: 0, revision: 3 }),
+  );
+  await assertFails(
+    updateDoc(ref, {
+      input: { ...defaults, routePlan, distance: 500 },
+      revision: 4,
+    }),
+  );
+  await assertSucceeds(updateDoc(ref, { journeyProgress: 1, revision: 4 }));
+});

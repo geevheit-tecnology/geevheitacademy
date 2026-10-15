@@ -287,11 +287,7 @@ small {
   overflow: hidden;
   background: #f4f6ef;
 }
-.route-map svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
+
 .map-caption {
   font-size: 8px;
   letter-spacing: 1px;
@@ -1348,5 +1344,332 @@ summary {
   }
   .public-header {
     display: none;
+  }
+}
+/* Geographic route planning and guided training */
+.leaflet-host {
+  height: 360px;
+  width: 100%;
+  z-index: 0;
+  background: #e5eadf;
+}
+.live-map-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  background: #fff;
+  font-size: 10px;
+  color: #677b63;
+}
+.live-map-header > span:first-child {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.live-map-header i {
+  height: 7px;
+  width: 7px;
+  border-radius: 50%;
+  background: #629142;
+}
+.warehouse-marker,
+.truck-marker {
+  background: transparent;
+  border: 0;
+}
+.warehouse-marker svg,
+.truck-marker svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 3px 5px #12352a35);
+}
+.leaflet-tooltip.warehouse-label {
+  font-family: "DM Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #194c3c;
+  border: 1px solid #d0dbc5;
+  box-shadow: 0 2px 8px #18352e15;
+  border-radius: 6px;
+  padding: 6px 9px;
+}
+.leaflet-container a {
+  color: #286b52;
+}
+.live-route-map .map-legend {
+  font-size: 10px;
+  padding: 14px;
+}
+.map-empty-notice,
+.map-service-notice {
+  padding: 12px 16px;
+  background: #f8f1dc;
+  color: #79632b;
+  font-size: 12px;
+  margin: 0;
+}
+.route-planner {
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+.route-planner > p {
+  font-size: 13px;
+}
+.route-planner h2 {
+  font-size: 25px;
+  margin: 8px 0;
+}
+.route-stops {
+  list-style: none;
+  margin: 24px 0;
+  padding: 0;
+}
+.route-stops > li {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  background: #f5f7ef;
+  border: 1px solid #dfe5d6;
+  padding: 18px;
+  border-radius: 9px;
+  margin-bottom: 10px;
+}
+.stop-number {
+  height: 29px;
+  width: 29px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #dfeac9;
+  font-size: 12px;
+  font-weight: 700;
+}
+.city-select {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 15px;
+}
+.city-select label {
+  margin-bottom: 0;
+}
+.city-select .notice {
+  grid-column: 1/-1;
+}
+.stop-actions {
+  display: flex;
+  gap: 5px;
+}
+.stop-actions button {
+  padding: 8px;
+  display: flex;
+}
+.route-feedback {
+  color: #3c764d;
+  font-size: 12px;
+}
+.route-leg-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+.route-leg-cards article {
+  border: 1px solid #dce4d3;
+  border-radius: 8px;
+  background: #f6f8f0;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.route-leg-cards article b {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.route-leg-cards article span,
+.route-leg-cards article small {
+  font-size: 10px;
+  color: #7b8971;
+}
+.route-leg-cards article.leg-current {
+  background: #eff5dc;
+  border-color: #92af61;
+}
+.route-leg-cards article.leg-done {
+  background: #eef6ef;
+  border-color: #bdd8bf;
+}
+.route-edit-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin: 0 0 22px;
+  flex-wrap: wrap;
+}
+.route-edit-actions > span {
+  font-size: 11px;
+  color: #7b8971;
+}
+.stage-guide {
+  background: #edf3e2;
+  border: 1px solid #d4e0c2;
+  padding: 26px;
+  border-radius: 10px;
+  margin-bottom: 22px;
+  animation: guide-enter 0.35s ease-out;
+}
+.stage-guide > .eyebrow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.stage-guide > h2 {
+  font-size: 25px;
+  margin: 8px 0 20px;
+}
+.guide-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.guide-cards article {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  background: #ffffffac;
+  padding: 18px;
+  border: 1px solid #dbe6cc;
+  border-radius: 8px;
+}
+.guide-cards article > svg {
+  flex-shrink: 0;
+  color: #769647;
+}
+.guide-cards b {
+  font-size: 12px;
+}
+.guide-cards p {
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 7px 0 0;
+}
+.step-success {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: #307245;
+  margin-bottom: 18px;
+}
+.journey-controls {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 22px;
+  margin: 20px 0;
+}
+.journey-controls h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+}
+.journey-controls p {
+  font-size: 12px;
+}
+.mission-card .leaflet-host {
+  height: 210px;
+}
+.hero-visual .leaflet-host {
+  height: 260px;
+}
+.empty-state > .route-map .leaflet-host {
+  height: 270px;
+}
+@keyframes guide-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 800px) {
+  .route-stops > li {
+    grid-template-columns: 28px 1fr;
+    padding: 14px;
+  }
+  .stop-actions {
+    grid-column: 2;
+  }
+  .guide-cards {
+    grid-template-columns: 1fr;
+  }
+  .leaflet-host {
+    height: 320px;
+  }
+  .live-map-header {
+    flex-wrap: wrap;
+  }
+  .hero-visual .leaflet-host {
+    height: 240px;
+  }
+}
+@media (max-width: 550px) {
+  .city-select {
+    grid-template-columns: 1fr;
+  }
+  .route-stops > li {
+    gap: 12px;
+  }
+  .stage-guide {
+    padding: 20px;
+  }
+  .stage-guide > h2 {
+    font-size: 22px;
+  }
+  .leaflet-host {
+    height: 300px;
+  }
+  .live-route-map .map-legend {
+    font-size: 8px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .journey-controls {
+    padding: 18px;
+  }
+  .route-leg-cards {
+    grid-template-columns: 1fr;
+  }
+  .live-map-header {
+    font-size: 9px;
+  }
+  .hero-visual .leaflet-host {
+    height: 220px;
+  }
+  .route-planner .primary {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-guide {
+    animation: none;
+  }
+}
+@media print {
+  .leaflet-control-container {
+    display: none;
+  }
+  .leaflet-host {
+    height: 260px;
   }
 }

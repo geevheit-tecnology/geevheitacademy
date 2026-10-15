@@ -60,6 +60,9 @@ try {
   await page.getByRole("button", { name: "Criar minha conta" }).click();
   await expect(page).toHaveURL(/\/app$/, { timeout: 30000 });
   created = true;
+  await expect(page.getByRole("heading", { name: "Olá, QA." })).toBeVisible({
+    timeout: 20000,
+  });
   await page.reload();
   await expect(page.getByRole("heading", { name: "Olá, QA." })).toBeVisible({
     timeout: 20000,
@@ -71,6 +74,27 @@ try {
   await page
     .getByLabel("Nome da missão", { exact: true })
     .fill("QA Ciclo completo");
+  await page
+    .getByRole("button", { name: "Adicionar ponto intermediário", exact: true })
+    .click();
+  await page
+    .getByRole("combobox", { name: /Ponto intermediário 1 — UF/ })
+    .selectOption("RJ");
+  await expect(
+    page.getByRole("combobox", { name: /Ponto intermediário 1 — cidade/ }),
+  ).toBeEnabled({ timeout: 25000 });
+  await page
+    .getByRole("combobox", { name: /Ponto intermediário 1 — cidade/ })
+    .selectOption({ label: "Resende" });
+  await page
+    .getByRole("button", { name: "Calcular e aplicar rota", exact: true })
+    .click();
+  await expect(
+    page.getByText(
+      "Rota calculada e aplicada. Distância atualizada no orçamento.",
+      { exact: true },
+    ),
+  ).toBeVisible({ timeout: 45000 });
   await page.getByRole("button", { name: "Criar e iniciar missão" }).click();
   await expect(page).toHaveURL(/\/app\/operacao\//, { timeout: 30000 });
   missionId = page.url().split("/").at(-1);
@@ -96,6 +120,29 @@ try {
     await expect(
       page.getByText(`ETAPA ${step} DE 20`, { exact: true }),
     ).toBeVisible({ timeout: 20000 });
+    await expect(page.locator(".stage-guide")).toContainText(
+      "O que fazer agora",
+    );
+    if (step === 9) {
+      const move = page.getByRole("button", {
+        name: "Percorrer próximo trecho",
+        exact: true,
+      });
+      await expect(move).toBeEnabled({ timeout: 20000 });
+      while (await move.count()) {
+        await move.click();
+        await expect(
+          page.getByText("Sincronizado com a nuvem", { exact: true }),
+        ).toBeVisible({ timeout: 20000 });
+      }
+      await expect(
+        page.getByRole("button", { name: "Todos os trechos percorridos" }),
+      ).toBeVisible();
+      await page.screenshot({
+        path: "docs/qa/road-map-truck.png",
+        fullPage: true,
+      });
+    }
     const checks = page.locator(".check-row input");
     const count = await checks.count();
     for (let i = 0; i < count; i++) {
@@ -162,6 +209,19 @@ try {
       "PASS: desktop/celular sem overflow; cadastro real; sessão após reload; ocorrência e resolução; 20 etapas; relatório; histórico e recuperação em segundo contexto; logout; zero erros JavaScript.",
   );
 } catch (error) {
+  await page.screenshot({ path: "docs/qa/map-qa-failure.png", fullPage: true });
+  console.error("JavaScript errors:", errors);
+  console.error(
+    await page
+      .locator("select")
+      .evaluateAll((nodes) =>
+        nodes.map((n) => ({
+          label: n.parentElement?.firstChild?.textContent,
+          options: n.options.length,
+          value: n.value,
+        })),
+      ),
+  );
   console.error(error.message);
   process.exitCode = 1;
 } finally {

@@ -14,7 +14,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" }) {
   const [busy, setBusy] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  if (user) return <Navigate to="/app" />;
+  if (user && !busy) return <Navigate to="/app" />;
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
