@@ -1673,3 +1673,365 @@ summary {
     height: 260px;
   }
 }
+/* Operation: keep map and actions together in the viewport. */
+.workspace-main:has(.operation-page) .workspace-header {
+  height: 60px;
+}
+.dashboard:has(.operation-page) {
+  padding: 18px 24px;
+}
+.operation-page > .page-heading {
+  margin-bottom: 12px;
+  gap: 12px;
+}
+.operation-page > .page-heading .eyebrow {
+  margin-bottom: 5px;
+  font-size: 8px;
+}
+.operation-page > .page-heading h1 {
+  font-size: 23px;
+  margin: 4px 0;
+}
+.operation-page > .page-heading p {
+  margin: 3px 0;
+  font-size: 11px;
+}
+.operation-page > .page-heading button {
+  padding: 6px 10px;
+  font-size: 10px;
+  margin-top: 4px;
+}
+.operation-page > .stats {
+  margin-bottom: 12px;
+  gap: 10px;
+}
+.operation-page > .stats .metric {
+  padding: 10px 13px;
+}
+.operation-page > .stats .metric strong {
+  font-size: 19px;
+  margin-top: 5px;
+}
+.operation-page > .stats .metric small {
+  font-size: 9px;
+}
+.operation-page > .tabs {
+  margin: 10px 0 12px;
+  gap: 5px;
+}
+.operation-page > .tabs button {
+  padding: 8px 12px;
+  font-size: 11px;
+}
+.operation-page .route-edit-actions {
+  margin-bottom: 10px;
+  gap: 10px;
+}
+.operation-page .route-edit-actions .secondary {
+  padding: 8px 12px;
+  font-size: 11px;
+}
+.compact-operation-grid {
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: 16px;
+}
+.operation-map-column {
+  position: sticky;
+  top: 12px;
+  min-width: 0;
+}
+.compact-operation-grid > .operation-map-column > .route-map {
+  margin: 0;
+}
+.operation-map-column .leaflet-host {
+  height: clamp(300px, calc(100dvh - 320px), 620px);
+}
+.operation-map-column .live-map-header {
+  padding: 10px 12px;
+}
+.operation-map-column .map-legend {
+  padding: 10px;
+  font-size: 9px;
+}
+.operation-control-column {
+  min-width: 0;
+  max-height: calc(100dvh - 250px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-right: 4px;
+  overscroll-behavior: contain;
+}
+.operation-control-column .stage-guide {
+  padding: 12px;
+  margin: 0 0 10px;
+  border-radius: 8px;
+}
+.operation-control-column .stage-guide > .eyebrow {
+  font-size: 8px;
+  margin-bottom: 5px;
+}
+.operation-control-column .stage-guide > h2 {
+  font-size: 17px;
+  line-height: 1.3;
+  margin: 6px 0 9px;
+}
+.operation-control-column .guide-cards {
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+.operation-control-column .guide-cards article {
+  padding: 8px;
+  gap: 8px;
+  border: 0;
+  background: #ffffff80;
+}
+.operation-control-column .guide-cards article > svg {
+  width: 16px;
+  height: 16px;
+}
+.operation-control-column .guide-cards p {
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 3px 0 0;
+}
+.operation-control-column .guide-cards b {
+  font-size: 10px;
+}
+.guide-explanation {
+  font-size: 10px;
+}
+.guide-explanation summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 5px 0;
+}
+.guide-explanation p {
+  font-size: 11px;
+  line-height: 1.5;
+}
+.operation-control-column .step-success {
+  font-size: 10px;
+  margin-bottom: 7px;
+  gap: 6px;
+}
+.operation-control-column .journey-controls {
+  padding: 12px;
+  margin: 0 0 10px;
+}
+.operation-control-column .journey-controls h3 {
+  font-size: 14px;
+  margin: 0;
+}
+.operation-control-column .journey-controls .panel-heading > b {
+  font-size: 13px;
+}
+.operation-control-column .journey-controls .progress {
+  margin: 10px 0;
+}
+.operation-control-column .journey-controls p {
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 7px 0 0;
+}
+.journey-leg-details {
+  font-size: 11px;
+  margin: 7px 0;
+}
+.journey-leg-details summary {
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.operation-control-column .route-leg-cards {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin: 7px 0;
+}
+.operation-control-column .route-leg-cards article {
+  padding: 8px;
+  gap: 4px;
+}
+.operation-control-column .route-leg-cards article > svg {
+  display: none;
+}
+.operation-control-column .route-leg-cards article b {
+  font-size: 10px;
+}
+.operation-control-column .route-leg-cards article span {
+  font-size: 9px;
+}
+.operation-control-column .operation-checklist {
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.operation-control-column .operation-checklist .eyebrow {
+  font-size: 8px;
+  margin: 0;
+}
+.operation-control-column .operation-checklist h2 {
+  font-size: 17px;
+  margin: 9px 0;
+}
+.operation-control-column .check-row {
+  padding: 8px;
+  margin: 7px 0;
+  font-size: 11px;
+  gap: 8px;
+  line-height: 1.4;
+}
+.operation-control-column .check-row input {
+  flex-shrink: 0;
+}
+.operation-control-column .primary {
+  padding: 10px 12px;
+  min-height: 38px;
+  width: 100%;
+  font-size: 11px;
+  gap: 8px;
+}
+.operation-timeline-details {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  font-size: 11px;
+}
+.operation-timeline-details summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+.operation-timeline-details .timeline {
+  margin-top: 8px;
+}
+.operation-timeline-details .timeline > div {
+  padding: 6px;
+}
+.operation-page > .destructive {
+  margin: 14px 0 0;
+  font-size: 10px;
+  gap: 14px;
+}
+.operation-page > .destructive button {
+  font-size: 10px;
+  padding: 6px;
+}
+.presentation .operation-map-column .leaflet-host {
+  height: clamp(300px, calc(100dvh - 320px), 700px);
+}
+.presentation .operation-page .metric strong {
+  font-size: 24px;
+}
+@media (max-width: 1100px) and (min-width: 1001px) {
+  .compact-operation-grid {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+  .dashboard:has(.operation-page) {
+    padding: 14px;
+  }
+}
+@media (max-width: 1000px) {
+  .compact-operation-grid {
+    display: block;
+  }
+  .operation-map-column {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-background, #f7f8f3);
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+  }
+  .operation-map-column .leaflet-host {
+    height: clamp(190px, 30dvh, 280px);
+  }
+  .operation-control-column {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+  .operation-control-column .stage-guide {
+    animation: none;
+  }
+  .operation-timeline-details .timeline {
+    display: block;
+  }
+  .operation-page > .stats .metric strong {
+    font-size: 18px;
+  }
+  .dashboard:has(.operation-page) {
+    padding: 14px;
+  }
+  .operation-page .route-edit-actions > span {
+    display: none;
+  }
+  .operation-control-column .guide-cards {
+    grid-template-columns: 1fr;
+  }
+  .presentation .operation-map-column .leaflet-host {
+    height: clamp(190px, 30dvh, 280px);
+  }
+}
+@media (max-width: 550px) {
+  .operation-page > .page-heading {
+    gap: 7px;
+  }
+  .operation-page > .page-heading h1 {
+    font-size: 20px;
+  }
+  .operation-page > .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .operation-page > .stats .metric {
+    padding: 8px 6px;
+    border-radius: 6px;
+  }
+  .operation-page > .stats .metric small {
+    font-size: 8px;
+  }
+  .operation-page > .stats .metric strong {
+    font-size: 12px;
+    letter-spacing: -0.4px;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+  }
+  .operation-page > .page-heading > div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .operation-page .sync {
+    font-size: 9px;
+  }
+  .operation-map-column .live-map-header {
+    font-size: 9px;
+    padding: 8px;
+    gap: 6px;
+  }
+  .operation-map-column .live-map-header > span:first-child {
+    font-size: 8px;
+  }
+  .operation-map-column .map-legend {
+    font-size: 8px;
+    padding: 7px;
+  }
+  .operation-map-column .leaflet-host {
+    height: clamp(170px, 26dvh, 230px);
+  }
+  .operation-control-column .stage-guide > h2 {
+    font-size: 16px;
+  }
+  .operation-page > .tabs button {
+    padding: 7px 9px;
+  }
+  .operation-page > .destructive {
+    gap: 10px;
+  }
+  .presentation .operation-map-column .leaflet-host {
+    height: clamp(170px, 26dvh, 230px);
+  }
+}

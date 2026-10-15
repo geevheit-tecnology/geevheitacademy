@@ -31,13 +31,13 @@ export function StageGuide({
             <p>{action}</p>
           </div>
         </article>
-        <article>
-          <Lightbulb size={20} />
-          <div>
-            <b>Por que este passo importa</b>
-            <p>{impact}</p>
-          </div>
-        </article>
+        <details className="guide-explanation">
+          <summary>
+            <Lightbulb size={15} />
+            Por que este passo importa
+          </summary>
+          <p>{impact}</p>
+        </details>
       </div>
     </section>
   );

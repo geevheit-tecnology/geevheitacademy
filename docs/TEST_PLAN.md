@@ -31,3 +31,5 @@ Teste Chrome com APIs reais e Firebase aprovado: seleção de RJ/Resende via IBG
 19 testes locais e build aprovados. Regressões verificam que Transporte não chega ao destino, que o avanço de etapa não teleporta o caminhão, que os incrementos são de até 10%, que manutenção exige liberação e que missões antigas são normalizadas. Perfil removeu o UID e a referência ao provedor de autenticação.
 
 Fluxo completo Chrome/Firebase real aprovado após a revisão: movimento gradual nas quatro etapas, vinte checklists, inspeção antes da continuação, resultado/histórico e perfil sem Firebase/Authentication/UID. Conta e dados sintéticos removidos. Capturas em docs/qa/travel-stage-9.png e travel-stage-12.png.
+
+Layout compacto validado em Chrome 1366×768 e 390×844: fluxo completo e checagens geométricas confirmaram que o canvas do mapa permanece dentro da viewport ao avançar a viagem no desktop e ao rolar até o checklist no celular. Build TypeScript/Vite aprovado. Não houve mudança de cálculos ou regras de negócio. Conta e documentos temporários removidos.

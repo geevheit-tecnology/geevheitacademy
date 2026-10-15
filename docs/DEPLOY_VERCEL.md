@@ -25,3 +25,5 @@ Revisão de mapas publicada em 15/10/2026, READY: https://geevheitacademy-pc3hiy
 Toolbar removida no projeto por API oficial Vercel: enablePreviewFeedback=false e enableProductionFeedback=false, confirmados por leitura após PATCH. Nenhuma alteração em outros projetos ou na equipe. Referência: https://vercel.com/docs/vercel-toolbar/managing-toolbar . Script reprodutível: scripts/disable-toolbar.cjs.
 
 Revisão de movimento por etapas e perfil publicada READY em 15/10/2026: https://geevheitacademy-iaewjw3jl-geevheits-projects.vercel.app . Deployment dpl_J6QKPd8P8pm215PhjW3zr6FAeKn1. Toolbar desligada no projeto para preview/produção. Build remoto aprovado.
+
+Layout operacional compacto publicado READY em 15/10/2026: https://geevheitacademy-21ulx82ax-geevheits-projects.vercel.app . Deployment dpl_9KXCq7RHx33Ewg1Cqj9tdnQDBt1u. Build remoto aprovado.

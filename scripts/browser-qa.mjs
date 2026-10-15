@@ -23,7 +23,7 @@ const browser = await chromium.launch({
   headless: true,
 });
 const context = await browser.newContext({
-  viewport: { width: 1440, height: 1000 },
+  viewport: { width: 1366, height: 768 },
 });
 const page = await context.newPage();
 const errors = [];
@@ -52,7 +52,7 @@ try {
       .toBe(true);
   }
   await page.screenshot({ path: "docs/qa/help-mobile.png", fullPage: true });
-  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto(`${baseUrl}/cadastro`);
   await page.getByLabel("Nome", { exact: true }).fill("QA Automatizado");
   await page.getByLabel("E-mail", { exact: true }).fill(email);
@@ -140,6 +140,17 @@ try {
       await expect(move).toBeEnabled({ timeout: 20000 });
       while (await move.count()) {
         await move.click();
+        await expect
+          .poll(() =>
+            page
+              .locator(".operation-map-column .leaflet-host")
+              .evaluate((el) => {
+                const r = el.getBoundingClientRect();
+                return r.top >= 0 && r.bottom <= window.innerHeight;
+              }),
+          )
+          .toBe(true);
+
         await expect(
           page.getByText("Sincronizado com a nuvem", { exact: true }),
         ).toBeVisible({ timeout: 20000 });
@@ -201,6 +212,17 @@ try {
       secondPage.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),
+    )
+    .toBe(true);
+  await secondPage.locator(".operation-checklist").scrollIntoViewIfNeeded();
+  await expect
+    .poll(() =>
+      secondPage
+        .locator(".operation-map-column .leaflet-host")
+        .evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return r.top >= 0 && r.bottom <= window.innerHeight;
+        }),
     )
     .toBe(true);
   await secondPage.screenshot({

@@ -37,37 +37,40 @@ export function JourneyControls({
       <div className="progress">
         <div style={{ width: `${progress * 100}%` }} />
       </div>
-      <div className="route-leg-cards">
-        {plan.legs.map((leg, i) => (
-          <article
-            className={
-              progress >= boundaries[i] - 1e-6
-                ? "leg-done"
-                : i === active
-                  ? "leg-current"
-                  : ""
-            }
-            key={i}
-          >
-            {progress >= boundaries[i] - 1e-6 ? (
-              <CheckCircle2 size={17} />
-            ) : (
-              <MapPin size={17} />
-            )}
-            <b>
-              {plan.stops[i].name} → {plan.stops[i + 1].name}
-            </b>
-            <span>
-              {leg.distanceKm.toFixed(1)} km •{" "}
-              {progress >= boundaries[i] - 1e-6
-                ? "Concluído"
-                : i === active
-                  ? "Próximo trecho"
-                  : "A percorrer"}
-            </span>
-          </article>
-        ))}
-      </div>
+      <details className="journey-leg-details">
+        <summary>Ver trechos da viagem</summary>
+        <div className="route-leg-cards">
+          {plan.legs.map((leg, i) => (
+            <article
+              className={
+                progress >= boundaries[i] - 1e-6
+                  ? "leg-done"
+                  : i === active
+                    ? "leg-current"
+                    : ""
+              }
+              key={i}
+            >
+              {progress >= boundaries[i] - 1e-6 ? (
+                <CheckCircle2 size={17} />
+              ) : (
+                <MapPin size={17} />
+              )}
+              <b>
+                {plan.stops[i].name} → {plan.stops[i + 1].name}
+              </b>
+              <span>
+                {leg.distanceKm.toFixed(1)} km •{" "}
+                {progress >= boundaries[i] - 1e-6
+                  ? "Concluído"
+                  : i === active
+                    ? "Próximo trecho"
+                    : "A percorrer"}
+              </span>
+            </article>
+          ))}
+        </div>
+      </details>
       {mission.step >= 8 && mission.step <= 11 && (
         <button
           className="primary"

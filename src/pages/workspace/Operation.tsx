@@ -9,7 +9,7 @@ import {
   Cloud,
   Download,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Link,
   useLocation,
@@ -46,6 +46,10 @@ export function Operation() {
     useMissionSync(user?.uid, id, setMessage);
   const [showPlanner, setShowPlanner] = useState(false);
   const [lastCompleted, setLastCompleted] = useState("");
+  const controlColumn = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (controlColumn.current) controlColumn.current.scrollTop = 0;
+  }, [mission?.step]);
   const [tab, setTab] = useState("operacao");
   const [kind, setKind] = useState<OccurrenceKind>("pane");
   const [description, setDescription] = useState("");
@@ -88,7 +92,7 @@ export function Operation() {
     }
   }
   return (
-    <>
+    <div className="operation-page">
       <div className="page-heading">
         <div>
           <span className="eyebrow">
@@ -160,11 +164,6 @@ export function Operation() {
       </div>
       {tab === "operacao" && (
         <>
-          <StageGuide
-            step={m.step}
-            completed={m.completed}
-            lastCompleted={lastCompleted}
-          />
           {m.step < 8 && !m.completed && (
             <div className="route-edit-actions">
               <button
@@ -194,15 +193,22 @@ export function Operation() {
         </>
       )}
       {tab === "operacao" && (
-        <div className="operation-grid">
-          <section>
+        <div className="operation-grid compact-operation-grid">
+          <section className="operation-map-column">
             <RouteMap input={m.input} progress={missionProgress(m)} />
+          </section>
+          <aside ref={controlColumn} className="operation-control-column">
+            <StageGuide
+              step={m.step}
+              completed={m.completed}
+              lastCompleted={lastCompleted}
+            />
             <JourneyControls
               mission={m}
               disabled={busy || !!pending || m.completed}
               onChange={(next) => void save(next)}
             />
-            <div className="panel">
+            <div className="panel operation-checklist">
               <div className="panel-heading">
                 <span className="eyebrow">ETAPA {m.step + 1} DE 20</span>
                 <span className="tag">
@@ -210,7 +216,7 @@ export function Operation() {
                 </span>
               </div>
               <h2>{stages[m.step]}</h2>
-              <p>Confira as condições abaixo antes de registrar o avanço.</p>
+
               {(requirements[m.step] ?? []).map((r, i) => (
                 <label className="check-row" key={r}>
                   <input
@@ -251,30 +257,32 @@ export function Operation() {
                 <ArrowRight size={18} />
               </button>
             </div>
-          </section>
-          <aside className="panel timeline">
-            <h3>Linha do tempo</h3>
-            {stages.map((s, i) => (
-              <div
-                className={
-                  i === m.step
-                    ? "current"
-                    : i < m.step || m.completed
-                      ? "done"
-                      : ""
-                }
-                key={s}
-              >
-                <span>
-                  {i < m.step || m.completed ? (
-                    <CheckCircle2 size={16} />
-                  ) : (
-                    String(i + 1).padStart(2, "0")
-                  )}
-                </span>
-                {s}
+            <details className="operation-timeline-details">
+              <summary>Ver as 20 etapas</summary>
+              <div className="timeline">
+                {stages.map((s, i) => (
+                  <div
+                    className={
+                      i === m.step
+                        ? "current"
+                        : i < m.step || m.completed
+                          ? "done"
+                          : ""
+                    }
+                    key={s}
+                  >
+                    <span>
+                      {i < m.step || m.completed ? (
+                        <CheckCircle2 size={16} />
+                      ) : (
+                        String(i + 1).padStart(2, "0")
+                      )}
+                    </span>
+                    {s}
+                  </div>
+                ))}
               </div>
-            ))}
+            </details>
           </aside>
         </div>
       )}
@@ -541,6 +549,6 @@ export function Operation() {
           Apagar missão
         </button>
       </div>
-    </>
+    </div>
   );
 }
