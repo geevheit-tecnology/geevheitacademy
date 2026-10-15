@@ -2128,3 +2128,27 @@ summary {
     display: none;
   }
 }
+.developer-credit {
+  width: 100%;
+  margin: 18px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #71816d;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+footer .developer-credit {
+  margin: 0;
+  font-size: 11px;
+}
+.app-footer {
+  padding: 12px 24px;
+  border-top: 1px solid var(--line);
+  justify-content: center;
+}
+.auth-form > .developer-credit {
+  margin-top: 28px;
+}
+.help > .developer-credit {
+  margin-top: 32px;
+}

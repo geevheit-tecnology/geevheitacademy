@@ -1,3 +1,4 @@
+import { FooterCredit } from "../components/FooterCredit";
 import { ArrowRight, Truck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
@@ -130,6 +131,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" }) {
           <Link to="/cadastro">Criar conta</Link>
           <Link to="/recuperar">Esqueci minha senha</Link>
         </div>
+        <FooterCredit />
       </section>
     </main>
   );

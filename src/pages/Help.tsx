@@ -1,3 +1,4 @@
+import { FooterCredit } from "../components/FooterCredit";
 import { Link } from "react-router-dom";
 export function Help() {
   return (
@@ -44,6 +45,7 @@ export function Help() {
       <Link className="primary" to="/app">
         Abrir minha central →
       </Link>
+      <FooterCredit />
     </main>
   );
 }

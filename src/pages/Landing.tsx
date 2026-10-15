@@ -1,3 +1,4 @@
+import { FooterCredit } from "../components/FooterCredit";
 import {
   ArrowRight,
   ChartNoAxesCombined,
@@ -211,6 +212,7 @@ export function Landing() {
           Simulação educacional. Não representa rastreamento, emissão fiscal ou
           conformidade legal.
         </small>
+        <FooterCredit />
       </footer>
     </>
   );

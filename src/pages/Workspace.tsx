@@ -1,3 +1,4 @@
+import { FooterCredit } from "../components/FooterCredit";
 import {
   HelpCircle,
   History,
@@ -115,6 +116,9 @@ export function Workspace() {
             }
           />
         </main>
+        <footer className="app-footer">
+          <FooterCredit />
+        </footer>
       </div>
     </div>
   );
