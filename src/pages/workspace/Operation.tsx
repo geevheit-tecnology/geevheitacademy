@@ -1,3 +1,4 @@
+import { missionProgress } from "../../domain/mission";
 import { RoutePlanner } from "../../components/RoutePlanner";
 import { StageGuide } from "../../components/StageGuide";
 import { JourneyControls } from "../../components/JourneyControls";
@@ -195,12 +196,7 @@ export function Operation() {
       {tab === "operacao" && (
         <div className="operation-grid">
           <section>
-            <RouteMap
-              input={m.input}
-              progress={
-                m.step < 8 ? 0 : m.step > 8 ? 1 : (m.journeyProgress ?? 0)
-              }
-            />
+            <RouteMap input={m.input} progress={missionProgress(m)} />
             <JourneyControls
               mission={m}
               disabled={busy || !!pending || m.completed}

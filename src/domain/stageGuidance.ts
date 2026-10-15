@@ -41,22 +41,22 @@ export const stageGuidance = [
   ],
   [
     "Conduza a viagem trecho a trecho",
-    "Use “Percorrer próximo trecho” para mover o caminhão até cada ponto configurado.",
+    "Use “Avançar na viagem” para percorrer a primeira parte da rota. A viagem continua nas próximas etapas.",
     "O progresso é salvo na nuvem. Panes e outras ocorrências impeditivas bloqueiam a movimentação.",
   ],
   [
     "Acompanhe e comunique a operação",
-    "Revise ocorrências, situação da viagem e comunicação com o motorista.",
+    "Continue a viagem até 70% do percurso, acompanhando ocorrências e a comunicação com o motorista.",
     "Registre o impacto financeiro e no prazo de cada evento uma única vez.",
   ],
   [
     "Confirme a liberação mecânica",
-    "Se houve pane, registre a ação corretiva e confirme que o veículo está apto.",
+    "Se houve pane, registre a ação corretiva. Após a liberação, continue até a aproximação do destino, em 90% do percurso.",
     "Resolver a ocorrência libera a continuação, sem apagar custos ou atrasos.",
   ],
   [
     "Formalize a chegada ao destino",
-    "O caminhão está no armazém de destino. Registre a chegada antes de descarregar.",
+    "Percorra os últimos quilômetros para chegar ao armazém de destino e registre a chegada antes de descarregar.",
     "A chegada permite comparar o prazo planejado com o tempo da operação.",
   ],
   [

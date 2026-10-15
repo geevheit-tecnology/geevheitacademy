@@ -2,6 +2,8 @@ import { Truck, MapPin, CheckCircle2 } from "lucide-react";
 import { legBoundaries } from "../domain/route";
 import {
   occurrenceTypes,
+  missionProgress,
+  stageTravelLimit,
   travelNextLeg,
   type Mission,
 } from "../domain/mission";
@@ -16,11 +18,13 @@ export function JourneyControls({
 }) {
   const plan = mission.input.routePlan;
   if (!plan) return null;
-  const progress = mission.step > 8 ? 1 : (mission.journeyProgress ?? 0);
+  const progress = missionProgress(mission);
+  const limit = stageTravelLimit(mission.step);
   const boundaries = legBoundaries(plan);
   const blocked = mission.occurrences.some(
     (o) => !o.resolved && occurrenceTypes[o.kind].blocking,
   );
+  const inspectionPending = mission.step === 10 && !mission.checks["10:0"];
   const active = boundaries.findIndex((p) => p > progress + 1e-6);
   return (
     <section className="journey-controls">
@@ -64,19 +68,31 @@ export function JourneyControls({
           </article>
         ))}
       </div>
-      {mission.step === 8 && (
+      {mission.step >= 8 && mission.step <= 11 && (
         <button
           className="primary"
-          disabled={disabled || blocked || progress >= 1}
+          disabled={
+            disabled || blocked || inspectionPending || progress >= limit - 1e-6
+          }
           onClick={() => onChange(travelNextLeg(mission))}
         >
-          {blocked
-            ? "Viagem bloqueada por ocorrência"
-            : progress >= 1
-              ? "Todos os trechos percorridos"
-              : "Percorrer próximo trecho"}
+          {inspectionPending
+            ? "Confirme a liberação no checklist"
+            : blocked
+              ? "Viagem bloqueada por ocorrência"
+              : progress >= limit - 1e-6
+                ? mission.step === 11
+                  ? "Chegada ao destino registrada"
+                  : "Percurso desta etapa concluído"
+                : "Avançar na viagem"}
           <Truck size={18} />
         </button>
+      )}
+      {mission.step >= 8 && mission.step <= 11 && (
+        <p>
+          Limite desta etapa: {(limit * 100).toFixed(0)}% do percurso. A chegada
+          completa acontece somente na etapa Chegada ao destino.
+        </p>
       )}
       {mission.step < 8 && (
         <p>

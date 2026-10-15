@@ -8,11 +8,14 @@ import {
   type RoutePlan,
 } from "../src/domain/route";
 import {
+  type Mission,
   createMission,
   defaults,
   advance,
   travelNextLeg,
   addOccurrence,
+  missionProgress,
+  stageTravelLimit,
 } from "../src/domain/mission";
 import { calculateRoadRoute } from "../src/services/geography";
 export const plan: RoutePlan = {
@@ -53,19 +56,46 @@ describe("trechos e movimento", () => {
       ),
     ).toEqual({ lat: 0, lng: 1.5 });
   });
-  it("bloqueia saída antes do transporte, pane e avanço incompleto", () => {
+  it("distribui a viagem pelas etapas sem chegar antecipadamente", () => {
     let mission = createMission({ ...defaults, routePlan: plan });
     expect(() => travelNextLeg(mission)).toThrow("Transporte");
-    mission = { ...mission, step: 8, checks: { "8:0": true } };
-    expect(() => advance(mission)).toThrow("trechos");
+    mission = {
+      ...mission,
+      step: 8,
+      checks: { "8:0": true, "9:0": true, "10:0": true, "11:0": true },
+    };
+    expect(() => advance(mission)).toThrow("viagem");
     expect(() =>
       travelNextLeg(addOccurrence(mission, "pane", "Pane impeditiva")),
     ).toThrow("impeditiva");
-    mission = travelNextLeg(mission);
-    expect(mission.journeyProgress).toBe(2 / 3);
-    mission = travelNextLeg(mission);
-    expect(advance(mission).step).toBe(9);
-    expect(() => travelNextLeg(mission)).toThrow("já foram");
+    for (const step of [8, 9, 10, 11]) {
+      const limit = stageTravelLimit(step);
+      while (missionProgress(mission) < limit - 1e-6) {
+        const before = missionProgress(mission);
+        mission = travelNextLeg(mission);
+        expect(missionProgress(mission) - before).toBeLessThanOrEqual(0.100001);
+      }
+      expect(mission.journeyProgress).toBe(limit);
+      if (step < 11) expect(missionProgress(mission)).toBeLessThan(1);
+      expect(() => travelNextLeg(mission)).toThrow("concluído");
+      const previous = missionProgress(mission);
+      mission = advance(mission);
+      expect(missionProgress(mission)).toBe(previous);
+    }
+    expect(mission.step).toBe(12);
+    expect(missionProgress(mission)).toBe(1);
+  });
+  it("não força missões antigas a 100% ao avançar e exige liberação mecânica", () => {
+    let mission: Mission = {
+      ...createMission({ ...defaults, routePlan: plan }),
+      step: 9,
+      journeyProgress: 1,
+      checks: { "9:0": true },
+    };
+    expect(missionProgress(mission)).toBe(0.7);
+    mission = advance(mission);
+    expect(mission.journeyProgress).toBe(0.7);
+    expect(() => travelNextLeg(mission)).toThrow("liberação");
   });
   it("valida formato e continuidade de trechos", () => {
     expect(routePlanSchema.safeParse({ ...plan, legs: [] }).success).toBe(

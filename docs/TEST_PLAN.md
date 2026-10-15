@@ -25,3 +25,9 @@ Após o proprietário iniciar Authentication, a API confirmou emailEnabled=true.
 `npm test`: 18 testes aprovados, incluindo interpolação geográfica, progressão ponderada dos trechos, seleção da geometria retornada pela API, bloqueio por pane e proibição de concluir viagem incompleta. `npm run test:rules`: quatro testes aprovados, incluindo persistência de routePlan, limite de progresso e bloqueio de alteração de percurso após saída. Build TypeScript/Vite aprovado com Leaflet separado em bundle próprio.
 
 Teste Chrome com APIs reais e Firebase aprovado: seleção de RJ/Resende via IBGE; geocodificação Photon; percurso São Paulo–Resende–Rio via OSRM; aplicação de distância ao orçamento; dois trechos percorridos; cards verificados nas vinte etapas; resultado/histórico em segundo contexto; logout. Nenhum erro JavaScript e nenhum overflow no celular. Conta e missão temporárias removidas. Captura do mapa e dos cards em docs/qa/road-map-truck.png.
+
+## Movimento por etapa e perfil
+
+19 testes locais e build aprovados. Regressões verificam que Transporte não chega ao destino, que o avanço de etapa não teleporta o caminhão, que os incrementos são de até 10%, que manutenção exige liberação e que missões antigas são normalizadas. Perfil removeu o UID e a referência ao provedor de autenticação.
+
+Fluxo completo Chrome/Firebase real aprovado após a revisão: movimento gradual nas quatro etapas, vinte checklists, inspeção antes da continuação, resultado/histórico e perfil sem Firebase/Authentication/UID. Conta e dados sintéticos removidos. Capturas em docs/qa/travel-stage-9.png e travel-stage-12.png.

@@ -1,3 +1,4 @@
+import { missionProgress } from "../../domain/mission";
 import { ArrowRight, Plus } from "lucide-react";
 import { Link, useOutletContext } from "react-router-dom";
 import { RouteMap } from "../../components/RouteMap";
@@ -55,12 +56,7 @@ export function Dashboard() {
               <p>
                 {m.input.origin} → {m.input.destination}
               </p>
-              <RouteMap
-                input={m.input}
-                progress={
-                  m.step < 8 ? 0 : m.step > 8 ? 1 : (m.journeyProgress ?? 0)
-                }
-              />
+              <RouteMap input={m.input} progress={missionProgress(m)} />
               <div className="progress">
                 <div style={{ width: `${(m.step / 20) * 100}%` }} />
               </div>

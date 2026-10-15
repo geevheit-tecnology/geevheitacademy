@@ -284,14 +284,20 @@ export function advance(m: Mission): Mission {
     m.occurrences.some((o) => !o.resolved && occurrenceTypes[o.kind].blocking)
   )
     throw Error("Resolva as ocorrências impeditivas antes de avançar.");
-  if (m.step === 8 && m.input.routePlan && (m.journeyProgress ?? 0) < 1)
+  if (
+    m.input.routePlan &&
+    m.step >= 8 &&
+    m.step <= 11 &&
+    missionProgress(m) + 1e-6 < stageTravelLimit(m.step)
+  )
     throw Error(
-      "Percorra todos os trechos da viagem antes de concluir Transporte.",
+      "Percorra a parte da viagem correspondente a esta etapa antes de avançar.",
     );
   if (!(requirements[m.step] ?? []).every((_, i) => m.checks[`${m.step}:${i}`]))
     throw Error("Conclua o checklist desta etapa.");
   return {
     ...m,
+    ...(m.input.routePlan ? { journeyProgress: missionProgress(m) } : {}),
     step: Math.min(19, m.step + 1),
     completed: m.step === 19,
     updatedAt: new Date().toISOString(),
@@ -342,9 +348,29 @@ export function resolveOccurrence(
   };
 }
 
+export function stageTravelLimit(step: number) {
+  return step < 8
+    ? 0
+    : step === 8
+      ? 0.4
+      : step === 9
+        ? 0.7
+        : step === 10
+          ? 0.9
+          : 1;
+}
+export function missionProgress(m: Mission) {
+  if (m.step < 8) return 0;
+  return Math.min(
+    m.journeyProgress ?? (m.step >= 12 ? 1 : 0),
+    stageTravelLimit(m.step),
+  );
+}
 export function travelNextLeg(m: Mission): Mission {
-  if (m.completed || m.step !== 8)
-    throw Error("A movimentação só é permitida na etapa Transporte.");
+  if (m.completed || m.step < 8 || m.step > 11)
+    throw Error(
+      "A movimentação só é permitida de Transporte até Chegada ao destino.",
+    );
   if (
     m.occurrences.some((o) => !o.resolved && occurrenceTypes[o.kind].blocking)
   )
@@ -353,10 +379,18 @@ export function travelNextLeg(m: Mission): Mission {
     );
   if (!m.input.routePlan)
     throw Error("Configure os trechos antes de iniciar a viagem.");
-  if ((m.journeyProgress ?? 0) >= 1)
-    throw Error("Todos os trechos já foram percorridos.");
-  return {
-    ...m,
-    journeyProgress: nextLegProgress(m.input.routePlan, m.journeyProgress ?? 0),
-  };
+  if (m.step === 10 && !m.checks["10:0"])
+    throw Error(
+      "Confirme a liberação do veículo no checklist antes de continuar a viagem.",
+    );
+  const progress = missionProgress(m);
+  const limit = stageTravelLimit(m.step);
+  if (progress >= limit - 1e-6)
+    throw Error("O percurso desta etapa já foi concluído.");
+  const next = Math.min(
+    limit,
+    progress + 0.1,
+    nextLegProgress(m.input.routePlan, progress),
+  );
+  return { ...m, journeyProgress: limit - next < 1e-6 ? limit : next };
 }

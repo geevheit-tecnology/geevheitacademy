@@ -123,9 +123,18 @@ try {
     await expect(page.locator(".stage-guide")).toContainText(
       "O que fazer agora",
     );
-    if (step === 9) {
+    const checks = page.locator(".check-row input");
+    const count = await checks.count();
+    for (let i = 0; i < count; i++) {
+      await expect(checks.nth(i)).toBeEnabled();
+      await checks.nth(i).check();
+      await expect(
+        page.getByText("Sincronizado com a nuvem", { exact: true }),
+      ).toBeVisible({ timeout: 20000 });
+    }
+    if (step >= 9 && step <= 12) {
       const move = page.getByRole("button", {
-        name: "Percorrer próximo trecho",
+        name: "Avançar na viagem",
         exact: true,
       });
       await expect(move).toBeEnabled({ timeout: 20000 });
@@ -136,21 +145,19 @@ try {
         ).toBeVisible({ timeout: 20000 });
       }
       await expect(
-        page.getByRole("button", { name: "Todos os trechos percorridos" }),
+        page.getByRole("button", {
+          name:
+            step === 12
+              ? "Chegada ao destino registrada"
+              : "Percurso desta etapa concluído",
+          exact: true,
+        }),
       ).toBeVisible();
-      await page.screenshot({
-        path: "docs/qa/road-map-truck.png",
-        fullPage: true,
-      });
-    }
-    const checks = page.locator(".check-row input");
-    const count = await checks.count();
-    for (let i = 0; i < count; i++) {
-      await expect(checks.nth(i)).toBeEnabled();
-      await checks.nth(i).check();
-      await expect(
-        page.getByText("Sincronizado com a nuvem", { exact: true }),
-      ).toBeVisible({ timeout: 20000 });
+      if (step === 9 || step === 12)
+        await page.screenshot({
+          path: `docs/qa/travel-stage-${step}.png`,
+          fullPage: true,
+        });
     }
     await page
       .getByRole("button", {
@@ -201,6 +208,13 @@ try {
     fullPage: true,
   });
   await second.close();
+  await page.goto(`${baseUrl}/app/perfil`);
+  await expect(
+    page.getByRole("heading", { name: "QA Automatizado" }),
+  ).toBeVisible();
+  await expect(page.locator(".panel")).not.toContainText(
+    /Firebase|Authentication|Identificador da conta/,
+  );
   await page.getByRole("button", { name: "Sair da conta" }).click();
   await expect(page).toHaveURL(/\/login$/, { timeout: 15000 });
   if (errors.length) throw Error(errors.join("\n"));
@@ -212,15 +226,13 @@ try {
   await page.screenshot({ path: "docs/qa/map-qa-failure.png", fullPage: true });
   console.error("JavaScript errors:", errors);
   console.error(
-    await page
-      .locator("select")
-      .evaluateAll((nodes) =>
-        nodes.map((n) => ({
-          label: n.parentElement?.firstChild?.textContent,
-          options: n.options.length,
-          value: n.value,
-        })),
-      ),
+    await page.locator("select").evaluateAll((nodes) =>
+      nodes.map((n) => ({
+        label: n.parentElement?.firstChild?.textContent,
+        options: n.options.length,
+        value: n.value,
+      })),
+    ),
   );
   console.error(error.message);
   process.exitCode = 1;

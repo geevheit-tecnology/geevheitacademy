@@ -21,3 +21,7 @@ Preview final confirmado READY em 15/10/2026: https://geevheitacademy-l8369xwad-
 Authentication iniciado pelo proprietário no console e confirmado via API: signIn.email.enabled=true e passwordRequired=true. Domínios autorizados incluem localhost, Firebase Hosting e geevheitacademy.vercel.app. Publicação inicial confirmada READY em https://geevheitacademy.vercel.app (deployment dpl_ECsDqEyyMkhVydJM6gfPmuHDvCXc). A CLI tratou o primeiro deploy sem target como produção; os próximos usam --target preview explicitamente.
 
 Revisão de mapas publicada em 15/10/2026, READY: https://geevheitacademy-pc3hiy1n5-geevheits-projects.vercel.app . Deployment dpl_9Vs7gRWLo3xErtw1PEEfTdSGCJSp. Inclui Leaflet/OSM, IBGE/Photon/OSRM, trechos e cards de orientação. Este preview substitui o anterior como versão de revisão atual.
+
+Toolbar removida no projeto por API oficial Vercel: enablePreviewFeedback=false e enableProductionFeedback=false, confirmados por leitura após PATCH. Nenhuma alteração em outros projetos ou na equipe. Referência: https://vercel.com/docs/vercel-toolbar/managing-toolbar . Script reprodutível: scripts/disable-toolbar.cjs.
+
+Revisão de movimento por etapas e perfil publicada READY em 15/10/2026: https://geevheitacademy-iaewjw3jl-geevheits-projects.vercel.app . Deployment dpl_J6QKPd8P8pm215PhjW3zr6FAeKn1. Toolbar desligada no projeto para preview/produção. Build remoto aprovado.

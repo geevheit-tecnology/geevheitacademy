@@ -13,7 +13,7 @@ Em Nova missão/Configurações, selecione origem, destino e até seis cidades i
 
 Missões antigas continuam compatíveis. Sem routePlan, mostram aviso para configuração em vez de exibir um corredor falso. Use Configurar trechos antes da etapa Transporte. Depois da liberação, alterações de input são bloqueadas pelas regras.
 
-O caminhão permanece na origem durante preparação/coleta/carregamento. Na etapa Transporte, Percorrer próximo trecho avança até cada ponto e salva journeyProgress. A geometria orienta a animação, e nenhuma atualização de frame é gravada. Pane impeditiva bloqueia o movimento. Não é possível concluir Transporte sem percorrer todos os trechos das missões que possuem routePlan. Depois da chegada, o caminhão permanece no destino. Reiniciar missão zera o progresso.
+O caminhão permanece na origem durante preparação/coleta/carregamento. Entre Transporte e Chegada ao destino, Avançar na viagem movimenta gradualmente e salva journeyProgress. A geometria orienta a animação, e nenhuma atualização de frame é gravada. Pane impeditiva bloqueia o movimento. Cada etapa exige seu marco de progresso; o percurso só termina completamente na Chegada ao destino. Depois da chegada, o caminhão permanece no destino. Reiniciar missão zera o progresso.
 
 Cards de orientação aparecem em cada uma das vinte etapas: objetivo, ação e consequência. A confirmação de etapa aparece após gravação bem-sucedida.
 
@@ -26,3 +26,7 @@ Referências:
 - https://project-osrm.org/docs/v5.5.1/api/
 - https://github.com/Project-OSRM/osrm-backend/wiki/Api-usage-policy
 - https://operations.osmfoundation.org/policies/tiles/
+
+## Ajuste de movimento por etapa
+
+O progresso não é mais forçado a 100% após Transporte. O limite educativo é 40% em Transporte, 70% em Monitoramento, 90% em Manutenção corretiva/liberação e 100% em Chegada ao destino. Cada comando avança até 10% ou até o próximo ponto, respeitando o limite atual. Concluir a etapa exige alcançar seu limite e cumprir o checklist. Na manutenção corretiva, o movimento exige liberação do veículo no checklist e resolução de panes. A animação retoma da posição visual atual quando interrompida por outro avanço. Missões antigas com 100% antecipado têm o progresso limitado à etapa; avançar normaliza o valor salvo.

@@ -149,7 +149,6 @@ export function RouteMap({
     if (!plan) return;
     const start = previousProgress.current;
     const end = Math.max(0, Math.min(1, progress));
-    previousProgress.current = end;
     let frame = 0;
     const started = performance.now();
     const reduced = window.matchMedia?.(
@@ -157,10 +156,9 @@ export function RouteMap({
     ).matches;
     function move(now: number) {
       const t = reduced ? 1 : Math.min(1, (now - started) / 1800);
-      const p = pointOnRoute(
-        plan!.geometry,
-        start + (end - start) * (t * t * (3 - 2 * t)),
-      );
+      const shown = start + (end - start) * (t * t * (3 - 2 * t));
+      previousProgress.current = shown;
+      const p = pointOnRoute(plan!.geometry, shown);
       vehicle.current?.setLatLng([p.lat, p.lng]);
       if (t < 1) frame = requestAnimationFrame(move);
     }

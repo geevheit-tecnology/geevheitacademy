@@ -15,8 +15,7 @@ export function Profile() {
       <span className="eyebrow">MINHA CONTA</span>
       <h1>{user?.displayName}</h1>
       <p>{user?.email}</p>
-      <p>Identificador da conta: {user?.uid}</p>
-      <p>Autenticação e sessão gerenciadas pelo Firebase Authentication.</p>
+      <p>Gerencie seu acesso e mantenha sua conta segura.</p>
       <button
         className="secondary"
         onClick={() => {
