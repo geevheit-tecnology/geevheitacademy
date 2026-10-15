@@ -1,0 +1,719 @@
+# PROJETO MASTER — TRANSPORTSIM 360 WEB
+## Simulador profissional de treinamento logístico com React, TypeScript, Firebase e Vercel
+
+## 1. PAPEL DA IA
+
+Atue como uma equipe sênior composta por:
+- Arquiteto de Software.
+- Engenheiro Frontend especializado em React e TypeScript.
+- Especialista em Firebase e Cloud Firestore.
+- Especialista em UX/UI para sistemas corporativos.
+- Especialista em logística e transporte rodoviário brasileiro.
+- Engenheiro de qualidade de software e testes automatizados.
+- Especialista em segurança de aplicações web.
+
+Desenvolva uma aplicação web profissional, funcional, responsiva e preparada para uso em treinamentos corporativos.
+
+O sistema se chamará **TransportSim 360** e terá como objetivo ensinar novos funcionários a compreender o ciclo de uma operação de transporte, desde a negociação comercial até a entrega, conferência documental e fechamento financeiro.
+
+Não desenvolver apenas uma demonstração visual. Implementar regras de negócio reais dentro do contexto simulado, cálculos reproduzíveis, navegação funcional, persistência, autenticação, sincronização e testes.
+
+Não interromper a execução após criar o planejamento ou a tela inicial. Implementar as funcionalidades, testar os fluxos e corrigir os problemas encontrados.
+
+---
+
+## 2. STACK TECNOLÓGICA OBRIGATÓRIA
+
+### Frontend
+- React.
+- TypeScript com configuração estrita (`strict: true`).
+- Vite.
+- CSS Modules ou CSS organizado por componentes.
+- React Router para navegação e rotas protegidas.
+- Lucide React para ícones.
+- Recharts, quando necessário, para gráficos.
+- React Hook Form e Zod para formulários e validação, se adequados.
+- Vitest e React Testing Library para testes.
+
+### Firebase
+- Firebase Authentication para cadastro e login.
+- Cloud Firestore para persistência das missões, configurações e resultados.
+- Firebase App Check como camada adicional de proteção, quando compatível com a configuração e o ambiente.
+- Regras de segurança do Firestore versionadas no repositório.
+
+### Hospedagem
+- Vercel para publicação.
+- GitHub para controle de versão.
+- Variáveis de ambiente para configuração.
+- Build de produção com Vite.
+
+### Restrições
+- Não criar backend próprio nesta primeira versão.
+- Não utilizar banco de dados local como substituto definitivo da nuvem.
+- Não exigir serviços pagos para as funcionalidades básicas, quando houver alternativa gratuita compatível.
+- Não depender de chaves de APIs de mapas para executar o simulador.
+- Não armazenar senhas manualmente.
+- Não utilizar dados de demonstração como se fossem dados oficiais.
+
+---
+
+## 3. OBJETIVO DO PRODUTO
+
+Criar um simulador educacional que permita ao funcionário aprender, praticar e compreender as consequências de decisões logísticas.
+
+O sistema deve ensinar:
+- Negociação e contratação de fretes.
+- Planejamento de transporte.
+- Seleção de veículo e carga.
+- Conferência de documentos.
+- Liberação operacional.
+- Manutenção preventiva e corretiva.
+- Consumo de combustível.
+- Pedágios e custos operacionais.
+- Jornada e pausas do motorista.
+- Monitoramento da viagem.
+- Tratamento de ocorrências.
+- Recebimento e descarga.
+- Aceite do recebedor.
+- Comprovante de entrega.
+- Conferência logística.
+- Fechamento financeiro.
+- Rentabilidade e desempenho da operação.
+
+O simulador deverá apresentar cenários de dificuldade iniciante, intermediária e avançada.
+
+Todos os dados ilustrativos deverão ser identificados como dados de treinamento.
+
+---
+
+## 4. ARQUITETURA E ORGANIZAÇÃO
+
+Adotar arquitetura modular, baixo acoplamento e separação entre interface, regras de negócio e infraestrutura.
+
+Estrutura sugerida:
+
+src/
+- app/
+- components/
+- pages/
+- features/
+  - auth/
+  - dashboard/
+  - simulation/
+  - mission/
+  - operations/
+  - occurrences/
+  - finance/
+  - history/
+  - settings/
+- domain/
+- services/
+- repositories/
+- hooks/
+- schemas/
+- utils/
+- styles/
+- types/
+
+Separar as responsabilidades:
+- `domain`: entidades, regras de negócio e cálculos.
+- `features`: funcionalidades e telas.
+- `services`: autenticação, sincronização e persistência.
+- `repositories`: acesso aos dados.
+- `components`: elementos reutilizáveis.
+- `schemas`: validação dos dados.
+- `utils`: formatação e funções auxiliares.
+- `types`: contratos e tipos TypeScript.
+
+Aplicar SOLID quando apropriado, composição de componentes, funções puras, tipagem explícita e tratamento de erros.
+
+Não criar uma arquitetura excessivamente complexa. Priorizar manutenção simples, confiabilidade e evolução futura.
+
+---
+
+## 5. PRD E DOCUMENTAÇÃO DO PROJETO
+
+Antes da implementação, criar:
+- `docs/PRD.md`
+- `docs/TASKS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/BUSINESS_RULES.md`
+- `docs/FIREBASE_SETUP.md`
+- `docs/FIRESTORE_SECURITY.md`
+- `docs/TEST_PLAN.md`
+- `docs/DEPLOY_VERCEL.md`
+- `docs/FUTURE_INTEGRATIONS.md`
+- `README.md`
+
+O PRD deverá incluir:
+- Problema que o produto resolve.
+- Público-alvo.
+- Objetivos de aprendizagem.
+- Requisitos funcionais e não funcionais.
+- Critérios de aceite.
+- Limites da primeira versão.
+- Métricas de qualidade e conclusão do treinamento.
+
+O arquivo TASKS deverá organizar as tarefas por prioridade, dependências e critérios de conclusão.
+
+---
+
+## 6. DESIGN SYSTEM E INTERFACE
+
+Criar uma identidade visual corporativa, moderna e profissional, adequada para apresentação em empresas e treinamentos presenciais.
+
+A interface deverá ter:
+- Painel de controle logístico.
+- Mapa ilustrativo com rota, veículo e armazéns.
+- Indicadores operacionais.
+- Linha do tempo da missão.
+- Painel financeiro.
+- Alertas de ocorrências.
+- Indicador de progresso.
+- Pontuação e desempenho.
+- Modo apresentação para telão.
+- Responsividade para computador, tablet e celular.
+
+Utilizar cores consistentes, tipografia legível, espaçamento padronizado, ícones coerentes e estados visuais para sucesso, alerta, erro e pendência.
+
+Não deixar textos ilegíveis, cartões vazios, botões decorativos ou elementos sem função.
+
+As instruções completas deverão ficar em uma área própria de ajuda, sem ocupar permanentemente a tela principal.
+
+Criar um modo de apresentação que amplie os indicadores importantes e reduza os elementos secundários.
+
+---
+
+## 7. AUTENTICAÇÃO COM FIREBASE
+
+Implementar autenticação real utilizando o SDK oficial modular do Firebase.
+
+### Funcionalidades obrigatórias
+- Cadastro com nome, e-mail e senha.
+- Login com e-mail e senha.
+- Logout.
+- Recuperação de senha por e-mail.
+- Persistência de sessão.
+- Verificação de sessão ao atualizar a página.
+- Rotas protegidas.
+- Tratamento de falhas de conexão.
+- Mensagens de erro em português.
+- Indicadores de carregamento.
+- Validação de formulários.
+- Tela de perfil básico.
+- Exibição do nome do usuário autenticado.
+
+Não implementar uma autenticação fictícia.
+
+Não considerar o usuário autenticado apenas porque existe um valor salvo no navegador. Utilizar o estado oficial do Firebase Authentication.
+
+### Organização sugerida
+- `src/lib/firebase.ts`
+- `src/features/auth/authService.ts`
+- `src/features/auth/AuthContext.tsx`
+- `src/features/auth/ProtectedRoute.tsx`
+- `src/pages/LoginPage.tsx`
+- `src/pages/RegisterPage.tsx`
+- `src/pages/ForgotPasswordPage.tsx`
+
+### Configuração
+Utilizar as seguintes variáveis de ambiente:
+
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+
+Criar um arquivo `.env.example` com valores demonstrativos.
+
+Nunca inserir chaves administrativas, service accounts ou credenciais privadas no frontend.
+
+Documentar a criação do projeto Firebase, o cadastro da aplicação Web, a ativação do provedor de e-mail e senha e a configuração dos domínios autorizados.
+
+A autenticação por telefone deverá ser uma integração futura opcional, pois pode envolver cobrança por SMS. Não utilizar login por telefone como requisito da primeira versão.
+
+---
+
+## 8. CLOUD FIRESTORE — BANCO DE DADOS NA NUVEM
+
+Utilizar Cloud Firestore para salvar os dados do usuário autenticado.
+
+O objetivo é permitir que o funcionário acesse suas missões em diferentes computadores após fazer login.
+
+### Estrutura sugerida
+
+`users/{uid}`
+
+Perfil básico:
+- Nome.
+- E-mail.
+- Data de criação.
+- Preferências.
+- Última atividade.
+
+`users/{uid}/settings/main`
+
+Configurações:
+- Preferências de interface.
+- Configurações de simulação.
+- Tipo de veículo preferido.
+- Valores padrão.
+- Última atualização.
+
+`users/{uid}/missions/{missionId}`
+
+Missões:
+- Identificador.
+- Nome da missão.
+- Origem e destino.
+- Veículo e carga.
+- Valor do frete.
+- Estratégia de rota.
+- Parâmetros de cálculo.
+- Etapa atual.
+- Estado da missão.
+- Ocorrências registradas.
+- Custos acumulados.
+- Data de criação.
+- Data de atualização.
+- Versão do modelo de dados.
+
+`users/{uid}/results/{resultId}`
+
+Resultados:
+- Identificador da missão.
+- Receita estimada.
+- Custos discriminados.
+- Resultado financeiro.
+- Margem percentual.
+- Prazo planejado e realizado.
+- Pontuação.
+- Indicadores de aprendizagem.
+- Erros operacionais.
+- Recomendações.
+- Data de conclusão.
+
+`users/{uid}/history/{historyId}`
+
+Histórico resumido das missões concluídas, com paginação quando necessário.
+
+Os documentos devem conter apenas os dados necessários. Evitar duplicação desnecessária e respeitar os limites de tamanho do Firestore.
+
+Não armazenar imagens de comprovantes ou arquivos grandes nesta primeira versão. Utilizar apenas registros demonstrativos e dados textuais.
+
+---
+
+## 9. SINCRONIZAÇÃO E PERSISTÊNCIA
+
+Implementar sincronização entre o navegador e o Firestore.
+
+Requisitos:
+- Salvar configurações alteradas.
+- Salvar missões em andamento.
+- Salvar mudanças de etapas importantes.
+- Salvar ocorrências.
+- Salvar resultados finais.
+- Recuperar as missões do usuário após novo login.
+- Permitir continuar uma missão em outro computador.
+- Exibir estados de sincronização.
+- Informar falhas de gravação.
+- Implementar tentativas controladas de recuperação.
+- Evitar gravações repetidas sem necessidade.
+- Evitar sobrescrever dados mais recentes com versões antigas.
+
+Utilizar identificadores únicos, `updatedAt`, controle de versão e estratégia de conflito documentada.
+
+Não gravar cada atualização de animação ou movimento do veículo. Salvar apenas alterações significativas.
+
+### Armazenamento local
+
+Utilizar `localStorage` apenas para preferências, cache e apoio temporário.
+
+Quando existir uma missão não sincronizada, avisar o usuário claramente.
+
+Não apagar uma missão ao reiniciar o navegador.
+
+Criar opções distintas para:
+- Reiniciar a missão atual.
+- Criar uma nova missão.
+- Restaurar configurações padrão.
+- Apagar uma missão.
+- Apagar o histórico do usuário.
+
+Exigir confirmação nas ações destrutivas.
+
+---
+
+## 10. FIRESTORE SECURITY RULES
+
+Criar o arquivo `firestore.rules`.
+
+As regras devem:
+- Exigir autenticação para acessar dados privados.
+- Restringir cada usuário ao seu próprio UID.
+- Impedir que usuários leiam ou alterem documentos de outras contas.
+- Validar os campos permitidos.
+- Validar tipos e tamanhos.
+- Impedir que o usuário altere campos protegidos indevidamente.
+- Negar acesso por padrão quando a regra não autorizar a operação.
+
+Não publicar regras abertas como `allow read, write: if true`.
+
+Não confiar apenas na proteção das páginas React.
+
+Criar testes automatizados das regras com o Firebase Emulator Suite, quando disponível.
+
+Documentar que o App Check é uma camada complementar, não um substituto das regras de segurança.
+
+---
+
+## 11. PLANO GRATUITO E CONTROLE DE CUSTOS
+
+Priorizar o plano Spark do Firebase.
+
+Utilizar os recursos gratuitos dentro das respectivas cotas e restrições vigentes.
+
+Para o Cloud Firestore, considerar as cotas gratuitas documentadas de:
+- 1 GiB de armazenamento.
+- 50.000 leituras de documentos por dia.
+- 20.000 gravações por dia.
+- 20.000 exclusões por dia.
+- 10 GiB de transferência de saída por mês.
+
+Esses limites estão sujeitos às regras e condições atuais do Firebase e se aplicam ao projeto, não individualmente a cada usuário.
+
+Implementar:
+- Consultas direcionadas.
+- Paginação do histórico.
+- Limitação de listeners em tempo real.
+- Salvamento apenas de alterações importantes.
+- Redução de leituras redundantes.
+- Documentação para monitorar o consumo.
+- Tratamento de indisponibilidade quando uma cota for atingida.
+
+Não ativar faturamento automaticamente.
+
+Não mudar para o plano Blaze sem autorização explícita do proprietário.
+
+Caso uma funcionalidade dependa de serviço pago, informar antes de implementá-la e oferecer alternativa compatível quando possível.
+
+Não prometer gratuidade ilimitada.
+
+---
+
+## 12. MOTOR DE CÁLCULOS LOGÍSTICOS
+
+Implementar o motor de cálculo independentemente da interface.
+
+Criar funções puras, testáveis e com entradas e saídas tipadas.
+
+### Combustível
+
+Litros necessários:
+
+`litros = distânciaKm / consumoKmPorLitro`
+
+Custo:
+
+`custoCombustível = litros × preçoDieselPorLitro`
+
+### Tempo de direção
+
+`tempoDireçãoHoras = distânciaKm / velocidadeMédiaKmH`
+
+### Tempo total da operação
+
+Somar de maneira explícita:
+- Tempo de direção.
+- Pausas.
+- Descansos entre jornadas.
+- Carregamento.
+- Descarga.
+- Tempo de manutenção.
+- Atrasos e demais ocorrências.
+
+Não contar duas vezes o mesmo intervalo.
+
+### Custos
+
+`custoTotal = combustível + pedágios + motorista + manutenção + diárias + alimentação + despesas diversas + ocorrências`
+
+Cada item deve ser lançado uma única vez.
+
+### Resultado financeiro
+
+`resultadoEstimado = valorFrete - custoTotal`
+
+`margemPercentual = valorFrete > 0 ? (resultadoEstimado / valorFrete) × 100 : 0`
+
+### Rotas
+
+Implementar as estratégias:
+- Curta.
+- Econômica.
+- Rápida.
+
+Cada estratégia deverá ter parâmetros próprios de distância, tempo, velocidade planejada e pedágios.
+
+A troca de rota deve alterar efetivamente os cálculos. Não basta alterar o nome, a cor ou o desenho.
+
+Os parâmetros de cenário devem ser visíveis e editáveis pelo instrutor.
+
+### Validações
+
+- Não permitir valores negativos quando não fizerem sentido.
+- Tratar divisão por zero.
+- Validar campos vazios.
+- Utilizar arredondamento apenas na apresentação monetária.
+- Separar valores informados de valores calculados.
+- Exibir memória de cálculo.
+- Identificar todos os dados ilustrativos.
+
+Criar testes unitários para os cálculos, incluindo valores extremos e entradas inválidas.
+
+---
+
+## 13. CICLO COMPLETO DA OPERAÇÃO
+
+Implementar uma máquina de estados ou mecanismo equivalente para controlar a missão.
+
+### Etapas
+
+1. Comercial: negociação, cliente, carga, origem, destino e valor do frete.
+2. Planejamento: rota, veículo, custos e prazo.
+3. Documentação: conferência de documentos simulados.
+4. Manutenção: checklist e liberação do veículo.
+5. Motorista: designação e disponibilidade.
+6. Coleta: chegada ao armazém de origem.
+7. Carregamento: início, término, conferência e aceite.
+8. Liberação: validação das pendências operacionais.
+9. Transporte: progresso da viagem e custos.
+10. Monitoramento: ocorrências e comunicação.
+11. Manutenção corretiva: interrupção e liberação após reparo.
+12. Chegada ao destino: registro de horário.
+13. Descarga: início, término e divergências.
+14. Aceite do recebedor: confirmação fictícia.
+15. Veículo vazio: comunicação do motorista.
+16. POD: geração de comprovante demonstrativo.
+17. Conferência logística: validação ou devolução do comprovante.
+18. Financeiro: consolidação de custos e receita.
+19. Encerramento: relatório final e pontuação.
+20. Debriefing: lições aprendidas e recomendações.
+
+Não permitir que o veículo avance para uma etapa incompatível com o estado atual.
+
+Exemplos:
+- Pane impeditiva bloqueia a continuação até a liberação.
+- Descarga não começa antes da chegada.
+- O aceite depende do tratamento das divergências.
+- O POD deve indicar pendências quando não estiver completo.
+- O fechamento financeiro depende da conferência operacional.
+- O motorista deve registrar que o caminhão está vazio.
+- A missão concluída não deve ser alterada silenciosamente.
+
+Todas as regras devem ser documentadas e testadas.
+
+---
+
+## 14. OCORRÊNCIAS E DECISÕES
+
+Criar eventos interativos:
+- Pane mecânica.
+- Atraso na coleta.
+- Documento pendente.
+- Divergência de carga.
+- Avaria.
+- Atraso na entrega.
+- Parada adicional.
+- Pedágio superior ao estimado.
+- Despesa extraordinária.
+- POD incompleto.
+
+Cada ocorrência deverá registrar:
+- Descrição.
+- Horário simulado.
+- Impacto financeiro.
+- Impacto no prazo.
+- Impacto na pontuação.
+- Opções de decisão.
+- Ação corretiva.
+- Estado de resolução.
+
+As consequências devem ser aplicadas uma única vez.
+
+Não premiar excesso de velocidade ou decisões inseguras.
+
+Regras de jornada, descanso, documentação e custos devem ser apresentadas como parâmetros educativos, sem afirmar conformidade legal automática.
+
+---
+
+## 15. PONTUAÇÃO E APRENDIZAGEM
+
+Criar um sistema transparente de pontuação baseado em:
+- Segurança.
+- Cumprimento do processo.
+- Qualidade documental.
+- Gestão de custos.
+- Cumprimento de prazo.
+- Tratamento de ocorrências.
+- Comunicação.
+- Fechamento financeiro.
+
+Apresentar a pontuação e explicar como ela foi calculada.
+
+Ao final da missão, mostrar:
+- Resultado financeiro estimado.
+- Custos por categoria.
+- Desvios de prazo.
+- Ocorrências.
+- Decisões corretas.
+- Erros cometidos.
+- Consequências.
+- Recomendações de melhoria.
+
+Não inventar uma pontuação sem relação com as ações do usuário.
+
+---
+
+## 16. TELAS DO SISTEMA
+
+Implementar:
+- Landing page.
+- Cadastro.
+- Login.
+- Recuperação de senha.
+- Painel do usuário.
+- Nova missão.
+- Configurações.
+- Painel da operação.
+- Mapa ilustrativo.
+- Linha do tempo.
+- Painel de custos.
+- Checklist operacional.
+- Central de ocorrências.
+- Aceite de carga e descarga.
+- POD demonstrativo.
+- Fechamento financeiro.
+- Resultado e debriefing.
+- Histórico de missões.
+- Perfil e logout.
+- Ajuda.
+- Modo apresentação.
+
+Todas as telas devem estar conectadas ao fluxo real do sistema.
+
+Não criar botões sem comportamento implementado.
+
+---
+
+## 17. TESTES AUTOMATIZADOS
+
+Utilizar Vitest, React Testing Library e ferramentas apropriadas para as regras do Firestore.
+
+Testar:
+- Fórmulas de combustível.
+- Custo de pedágios.
+- Tempo de viagem.
+- Custos totais.
+- Margem financeira.
+- Pontuação.
+- Validações.
+- Fluxo de estados.
+- Persistência.
+- Recuperação de sessão.
+- Cadastro e login.
+- Logout.
+- Recuperação de senha.
+- Sincronização.
+- Conflitos de atualização.
+- Falhas de conexão.
+- Regras de segurança.
+- Proteção de rotas.
+- Responsividade básica.
+
+Executar o build de produção.
+
+Não declarar testes aprovados sem executá-los.
+
+Entregar um resumo dos testes realizados e das limitações que permanecerem.
+
+---
+
+## 18. DEPLOY NA VERCEL
+
+Preparar o projeto para publicação.
+
+Entregar:
+- `package.json`.
+- `vite.config.ts`.
+- `tsconfig.json`.
+- `.env.example`.
+- `firestore.rules`.
+- `firebase.json`, quando necessário.
+- Arquivos de teste.
+- Documentação de configuração.
+- Instruções de deploy.
+- Configuração de fallback para SPA, caso o React Router seja utilizado.
+
+O fluxo deverá ser:
+1. Instalar dependências.
+2. Configurar o Firebase.
+3. Criar as variáveis de ambiente.
+4. Executar os testes.
+5. Executar o build.
+6. Enviar para o GitHub.
+7. Importar o repositório na Vercel.
+8. Configurar as variáveis de ambiente na Vercel.
+9. Autorizar o domínio de produção no Firebase Authentication.
+10. Publicar e testar a aplicação.
+
+Não afirmar que o sistema está publicado sem realizar o deploy.
+
+---
+
+## 19. CRITÉRIOS FINAIS DE ACEITE
+
+O sistema será considerado pronto quando:
+
+1. O cadastro e o login forem reais.
+2. As rotas protegidas funcionarem.
+3. As missões forem salvas no Firestore.
+4. Os dados forem recuperados em outro dispositivo.
+5. As regras impedirem acesso a dados de outros usuários.
+6. As configurações persistirem.
+7. Os cálculos forem reproduzíveis e testados.
+8. As rotas alterarem os resultados.
+9. O fluxo operacional respeitar as dependências.
+10. O histórico e o resultado final funcionarem.
+11. O simulador estiver responsivo.
+12. O build de produção for concluído.
+13. A documentação estiver atualizada.
+14. Os limites do plano gratuito estiverem documentados.
+15. Não existirem erros críticos conhecidos sem identificação.
+
+## 20. ORDEM DE EXECUÇÃO
+
+Executar nesta sequência:
+
+1. Criar o PRD e os critérios de aceite.
+2. Definir a arquitetura e os modelos TypeScript.
+3. Implementar e testar o motor de cálculos.
+4. Implementar o fluxo da missão.
+5. Implementar Firebase Authentication.
+6. Implementar Cloud Firestore e regras de segurança.
+7. Implementar persistência e sincronização.
+8. Construir o Design System.
+9. Desenvolver as telas.
+10. Integrar interface, regras e serviços.
+11. Implementar os relatórios.
+12. Executar os testes.
+13. Corrigir os problemas.
+14. Executar o build de produção.
+15. Entregar o projeto completo e a documentação.
+
+Priorizar confiabilidade, clareza operacional, segurança, baixo custo e manutenção simples.
+
+**Não entregue apenas um planejamento ou um protótipo visual. Implemente a aplicação funcional, execute os testes disponíveis e informe honestamente o que foi concluído, o que foi testado e o que ainda depende de configuração externa.**

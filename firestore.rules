@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+  function text(v,n) { return v is string && v.size() > 0 && v.size() <= n; }
+  function profile() { let d=request.resource.data; return d.keys().hasAll(['name','email','createdAt']) && d.keys().hasOnly(['name','email','createdAt']) && text(d.name,100) && text(d.email,254) && text(d.createdAt,40); }
+  function mission(id) { let d=request.resource.data; return d.keys().hasAll(['id','input','step','checks','occurrences','createdAt','updatedAt','revision','schemaVersion','completed']) && d.keys().hasOnly(['id','input','step','checks','occurrences','createdAt','updatedAt','revision','schemaVersion','completed']) && d.id == id && d.schemaVersion == 1 && d.step is int && d.step >= 0 && d.step <= 19 && d.completed is bool && (!d.completed || d.step == 19) && d.revision is int && d.revision > 0 && d.checks is map && d.checks.size() <= 50 && d.occurrences is list && d.occurrences.size() <= 100 && text(d.createdAt,40) && text(d.updatedAt,40) && parameters(d.input); }
+  function parameters(p) { return p is map && p.keys().hasAll(['name','client','origin','destination','cargo','vehicle','driver','difficulty','route','freight','distance','speed','consumption','diesel','toll','driverHourly','maintenance','daily','food','miscellaneous','loading','unloading','pauseEvery','pauseDuration','shiftHours','restHours','deadline']) && p.keys().hasOnly(['name','client','origin','destination','cargo','vehicle','driver','difficulty','route','freight','distance','speed','consumption','diesel','toll','driverHourly','maintenance','daily','food','miscellaneous','loading','unloading','pauseEvery','pauseDuration','shiftHours','restHours','deadline']) && text(p.name,100) && text(p.client,100) && text(p.origin,100) && text(p.destination,100) && text(p.cargo,100) && text(p.vehicle,100) && text(p.driver,100) && p.difficulty in ['Iniciante','Intermediária','Avançada'] && p.route in ['curta','economica','rapida'] && p.freight is number && p.freight >= 0 && p.distance is number && p.distance > 0 && p.distance <= 10000 && p.speed is number && p.speed >= 1 && p.speed <= 80 && p.consumption is number && p.consumption > 0 && p.consumption <= 30 && p.diesel is number && p.diesel > 0 && p.diesel <= 100 && p.toll is number && p.toll >= 0 && p.driverHourly is number && p.driverHourly >= 0 && p.maintenance is number && p.maintenance >= 0 && p.daily is number && p.daily >= 0 && p.food is number && p.food >= 0 && p.miscellaneous is number && p.miscellaneous >= 0 && p.loading is number && p.loading >= 0 && p.unloading is number && p.unloading >= 0 && p.pauseEvery is number && p.pauseEvery >= 0.25 && p.pauseDuration is number && p.pauseDuration >= 0 && p.shiftHours is number && p.shiftHours >= 0.25 && p.restHours is number && p.restHours >= 0 && p.deadline is number && p.deadline > 0; }
+  match /users/{uid} {
+   allow read,delete: if owner(uid);
+   allow create: if owner(uid) && profile();
+   allow update: if owner(uid) && profile() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.email == resource.data.email;
+   match /missions/{id} {
+    allow read,delete: if owner(uid);
+    allow create: if owner(uid) && mission(id) && request.resource.data.revision == 1;
+    allow update: if owner(uid) && mission(id) && !resource.data.completed && request.resource.data.revision == resource.data.revision + 1 && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.input == resource.data.input;
+   }
+   match /settings/{id} {
+    allow read,delete: if owner(uid) && id == 'main';
+    allow create,update: if owner(uid) && id == 'main' && request.resource.data.keys().hasOnly(['values','updatedAt']) && parameters(request.resource.data.values) && text(request.resource.data.updatedAt,40);
+   }
+   match /results/{id} {
+    allow read,delete: if owner(uid);
+    allow create: if owner(uid) && request.resource.data.keys().hasAll(['missionId','name','financial','score','completedAt']) && request.resource.data.keys().hasOnly(['missionId','name','financial','score','completedAt']) && request.resource.data.missionId == id && text(request.resource.data.name,100) && request.resource.data.financial is map && request.resource.data.financial.size() <= 20 && request.resource.data.score is map && request.resource.data.score.size() <= 4 && text(request.resource.data.completedAt,40) && getAfter(/databases/$(database)/documents/users/$(uid)/missions/$(id)).data.completed == true;
+   }
+   match /history/{id} {
+    allow read,delete: if owner(uid);
+    allow create: if owner(uid) && request.resource.data.keys().hasAll(['missionId','name','score','completedAt']) && request.resource.data.keys().hasOnly(['missionId','name','score','completedAt']) && request.resource.data.missionId == id && text(request.resource.data.name,100) && request.resource.data.score is number && request.resource.data.score >= 0 && request.resource.data.score <= 100 && text(request.resource.data.completedAt,40) && getAfter(/databases/$(database)/documents/users/$(uid)/missions/$(id)).data.completed == true;
+   }
+  }
+ }
+}
