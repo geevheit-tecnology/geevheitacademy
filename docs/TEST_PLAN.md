@@ -35,3 +35,13 @@ Fluxo completo Chrome/Firebase real aprovado após a revisão: movimento gradual
 Layout compacto validado em Chrome 1366×768 e 390×844: fluxo completo e checagens geométricas confirmaram que o canvas do mapa permanece dentro da viewport ao avançar a viagem no desktop e ao rolar até o checklist no celular. Build TypeScript/Vite aprovado. Não houve mudança de cálculos ou regras de negócio. Conta e documentos temporários removidos.
 
 Explicação temporária validada no Chrome: aparece após cada avanço salvo, desaparece automaticamente (checagem com timeout de 7 segundos para timer de 5), reabre por Explicação rápida e fecha pelo X. Fluxo completo, perfil, mapa visível e limpeza dos dados de QA aprovados. Build TypeScript/Vite aprovado.
+
+
+## 28/10/2026 — correcao.md e administrador geral
+
+- Build TypeScript/Vite aprovado; 31 testes da aplicação e 14 de regras aprovados.
+- Navegador com emuladores: landing animada/pausa, manual, teste gratuito, comercial avançado com desafios e cálculo de preço, transporte em 10 etapas e ciclo completo com 40 etapas e negociação.
+- Central: exclusividade do proprietário, conta de aluno rejeitada no admin, aprovação Pix, cancelamento/reativação, liberação por prazo, bloqueio/desbloqueio, manutenção, auditoria e celular sem overflow.
+- Autenticação: proprietário sai, abre o login padrão e entra novamente, sendo encaminhado diretamente a `/admin`; o teste usa senha fictícia somente no emulador.
+- Produção: Vercel READY e domínio principal resolvendo para a versão promovida; Firebase confirmou permissão do proprietário, login e-mail/senha, domínio autorizado e hash idêntico das regras ativas. Evidência: `docs/qa/admin-production-verification.json` e `DEPLOY_VERCEL.md`.
+- Não houve pagamento bancário real nem uso da senha real do proprietário. Configuração comercial e primeira conferência bancária permanecem sob controle do proprietário na central.

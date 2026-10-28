@@ -1,3 +1,4 @@
+import { administratorEmail } from "../domain/adminAccess";
 import { FooterCredit } from "../components/FooterCredit";
 import { ArrowRight, Truck } from "lucide-react";
 import { useState, type FormEvent } from "react";
@@ -20,7 +21,9 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" }) {
   const destination =
     typeof from === "string" && (from === "/admin" || from.startsWith("/app"))
       ? from
-      : "/app";
+      : user?.email === administratorEmail
+        ? "/admin"
+        : "/app";
   if (user && !busy) return <Navigate to={destination} />;
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,7 +41,15 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" }) {
           "Se o e-mail estiver cadastrado, você receberá as instruções.",
         );
       } else await login(email, password);
-      if (mode !== "reset") navigate(destination);
+      if (mode !== "reset")
+        navigate(
+          typeof from === "string" &&
+            (from === "/admin" || from.startsWith("/app"))
+            ? from
+            : email.trim().toLowerCase() === administratorEmail
+              ? "/admin"
+              : "/app",
+        );
     } catch (e) {
       setMessage(errorMessage(e));
     } finally {

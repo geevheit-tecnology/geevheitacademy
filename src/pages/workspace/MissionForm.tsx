@@ -128,6 +128,8 @@ export function MissionForm({ settings = false }: { settings?: boolean }) {
               {Object.entries(trainingModes).map(([key, item]) => (
                 <label key={key} className={mode === key ? "selected" : ""}>
                   <input
+                    id={`training-mode-${key}`}
+                    aria-label={item.label}
                     type="radio"
                     name="training-mode"
                     value={key}
@@ -164,10 +166,12 @@ export function MissionForm({ settings = false }: { settings?: boolean }) {
         <h2>Dados e parâmetros de treinamento</h2>
         <div className="form-grid">
           {(Object.keys(defaults) as ParameterKey[]).map((key) => (
-            <label key={key}>
+            <label key={key} htmlFor={`mission-${key}`}>
               {labels[key]}
               {key === "route" ? (
                 <select
+                  id={`mission-${key}`}
+                  aria-label={labels[key]}
                   value={values.route}
                   onChange={(e) => {
                     const route = e.target.value as MissionInput["route"];
@@ -192,6 +196,8 @@ export function MissionForm({ settings = false }: { settings?: boolean }) {
                 </select>
               ) : key === "difficulty" ? (
                 <select
+                  id={`mission-${key}`}
+                  aria-label={labels[key]}
                   value={values.difficulty}
                   onChange={(e) =>
                     setValues({
@@ -206,6 +212,8 @@ export function MissionForm({ settings = false }: { settings?: boolean }) {
                 </select>
               ) : (
                 <input
+                  id={`mission-${key}`}
+                  aria-label={labels[key]}
                   readOnly={
                     key === "origin" ||
                     key === "destination" ||

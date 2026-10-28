@@ -47,7 +47,9 @@ try {
     await target.getByLabel("E-mail", { exact: true }).fill(address);
     await target.getByLabel("Senha", { exact: true }).fill(password);
     await target.getByRole("button", { name: "Criar minha conta" }).click();
-    await expect(target).toHaveURL(`${base}/app`);
+    await expect(target).toHaveURL(
+      `${base}/${address === email ? "admin" : "app"}`,
+    );
   }
   await register(page, "Administrador QA", email);
   const accounts = await (
@@ -77,14 +79,19 @@ try {
   );
   if (!grant.ok) throw Error("Cannot grant emulator admin");
   await page.goto(`${base}/admin`);
+  await page.getByRole("button", { name: "Plano e Pix", exact: true }).click();
   await page.getByLabel("Nome do plano").fill("Plano QA");
   await page.getByLabel("Valor em reais").fill("49.90");
   await page.getByLabel("Duração do acesso em dias").fill("30");
   await page.getByLabel("Chave Pix").fill("qa@example.com");
   await page.getByLabel("Nome do favorecido").fill("Favorecido QA");
-  await page.getByLabel("Disponibilizar assinatura").check();
+  await page
+    .getByLabel("Disponibilizar contratação e renovação por Pix")
+    .check();
   await page.getByRole("button", { name: "Salvar configurações" }).click();
-  await expect(page.getByRole("status")).toContainText("Configuração salva");
+  await expect(page.locator(".admin-main > .notice")).toContainText(
+    "Configuração salva",
+  );
   const studentContext = await browser.newContext({
     viewport: { width: 390, height: 844 },
   });
@@ -143,12 +150,15 @@ try {
     path: "docs/qa/billing-student-mobile.png",
     fullPage: true,
   });
-  await expect(page.getByText("Plano QA ·")).toBeVisible();
+  await page.getByRole("button", { name: /^Pagamentos/ }).click();
+  await expect(page.getByText("Plano QA ·").first()).toBeVisible();
   page.once("dialog", (dialog) => dialog.accept());
   await page
     .getByRole("button", { name: "Confirmar recebimento e liberar" })
     .click();
-  await expect(page.getByRole("status")).toContainText("assinatura liberada");
+  await expect(page.locator(".admin-main > .notice")).toContainText(
+    "assinatura liberada",
+  );
   await expect(student.getByText("Acesso liberado até")).toBeVisible();
   await student.goto(`${base}/app/nova`);
   await expect(student).toHaveURL(`${base}/app/nova`);
@@ -157,17 +167,124 @@ try {
   ).toHaveCount(0);
   if (errors.length) throw Error(errors.join("\n"));
   await student.goto(`${base}/app/assinatura`);
-  student.once('dialog', dialog => dialog.accept());
-  await student.getByRole('button', { name: 'Cancelar assinatura', exact: true }).click();
-  await expect(student.getByRole('heading', { name: 'Assinatura cancelada', exact: true })).toBeVisible();
-  await expect(student.getByRole('button', { name: 'Já paguei' })).toHaveCount(0);
+  student.once("dialog", (dialog) => dialog.accept());
+  await student
+    .getByRole("button", { name: "Cancelar assinatura", exact: true })
+    .click();
+  await expect(
+    student.getByRole("heading", { name: "Assinatura cancelada", exact: true }),
+  ).toBeVisible();
+  await expect(student.getByRole("button", { name: "Já paguei" })).toHaveCount(
+    0,
+  );
   await student.goto(`${base}/app/nova`);
   await expect(student).toHaveURL(`${base}/app/nova`);
   await student.goto(`${base}/app/assinatura`);
-  await student.getByRole('button', { name: 'Reativar assinatura' }).click();
-  await expect(student.getByRole('heading', { name: 'Você controla sua assinatura' })).toBeVisible();
+  await student.getByRole("button", { name: "Reativar assinatura" }).click();
+  await expect(
+    student.getByRole("heading", { name: "Você controla sua assinatura" }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Alunos e acessos", exact: true })
+    .click();
+  await page.getByLabel("Buscar por e-mail exato").fill(studentEmail);
+  await page
+    .getByRole("button", { name: "Buscar alunos", exact: true })
+    .click();
+  const account = page
+    .locator(".admin-student")
+    .filter({ hasText: studentEmail });
+  await account.getByRole("button", { name: "Gerenciar acesso" }).click();
+  await account
+    .getByLabel("Motivo da alteração")
+    .fill("Liberação para treinamento supervisionado da equipe.");
+  await account.getByLabel("Dias de liberação manual").fill("7");
+  await account
+    .getByRole("button", { name: "Liberar acesso por prazo" })
+    .click();
+  await expect(page.locator(".admin-main > .notice")).toContainText(
+    "Acesso liberado por 7 dias.",
+  );
+  await student.goto(`${base}/app/assinatura`);
+  await expect(
+    student.getByText("Liberação administrativa vigente até", { exact: false }),
+  ).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await account
+    .getByRole("button", { name: "Bloquear treinamentos", exact: true })
+    .click();
+  await expect(page.locator(".admin-main > .notice")).toContainText(
+    "Acesso aos treinamentos bloqueado.",
+  );
+  await student.goto(`${base}/app/nova`);
+  await expect(student).toHaveURL(`${base}/app/assinatura`);
+  await expect(
+    student.getByText("Acesso aos treinamentos bloqueado pelo administrador.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await account
+    .getByRole("button", { name: "Desbloquear treinamentos", exact: true })
+    .click();
+  await expect(page.locator(".admin-main > .notice")).toContainText(
+    "Acesso aos treinamentos desbloqueado.",
+  );
+  await student.goto(`${base}/app/nova`);
+  await expect(student).toHaveURL(`${base}/app/nova`);
+  await page
+    .getByRole("button", { name: "Histórico administrativo", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Acesso liberado por prazo" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await page
+    .getByLabel("E-mail de suporte aos alunos")
+    .fill("suporte@example.com");
+  await page.getByLabel("Pausar treinamentos para manutenção").check();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Salvar controles gerais" }).click();
+  await expect(page.locator(".admin-main > .notice")).toContainText(
+    "Controles gerais atualizados.",
+  );
+  await student.goto(`${base}/app/nova`);
+  await expect(student).toHaveURL(`${base}/app/assinatura`);
+  await expect(
+    student.getByText("Os treinamentos estão pausados para manutenção.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await page.getByLabel("Pausar treinamentos para manutenção").uncheck();
+  await page.getByRole("button", { name: "Salvar controles gerais" }).click();
+  await expect(page.locator(".admin-main > .notice")).toContainText(
+    "Controles gerais atualizados.",
+  );
+  await page.screenshot({
+    path: "docs/qa/admin-general-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "docs/qa/admin-general-mobile.png",
+    fullPage: true,
+  });
+  if (errors.length) throw Error(errors.join("\n"));
+  await page.getByRole('button', { name: 'Sair', exact: true }).click();
+  await expect(page).toHaveURL(`${base}/login`);
+  await page.goto(`${base}/login`);
+  await page.getByLabel('E-mail', { exact: true }).fill(email);
+  await page.getByLabel('Senha', { exact: true }).fill(password);
+  await page.getByRole('button', { name: 'Entrar na plataforma', exact: true }).click();
+  await expect(page).toHaveURL(`${base}/admin`);
+  await expect(page.getByRole('heading', { name: 'Central do administrador', exact: true })).toBeVisible();
+  if (errors.length) throw Error(errors.join('\n'));
   console.log(
-    "PASS: aligned landing, admin config, denied student admin, subscription gate, manual Pix request, approval, cancellation, reactivation and mobile flow",
+    "PASS: aligned landing, admin config, denied student admin, subscription gate, manual Pix request, approval, cancellation, reactivation, general admin, owner logout/login redirect, student grant/block, maintenance, audit and mobile flow",
   );
 } finally {
   await browser?.close();

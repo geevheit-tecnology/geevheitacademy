@@ -27,7 +27,49 @@ async function main() {
       throw Error(`${r.status}: ${d.error?.message || "Requisição rejeitada"}`);
     return d;
   }
-  if (process.argv[2] === "grant-admin") {
+  if (process.argv[2] === "verify-admin") {
+    const email = "getuliopedromoreirafilho@gmail.com";
+    const result = await request(
+      `https://identitytoolkit.googleapis.com/v1/projects/${project}/accounts:lookup`,
+      "POST",
+      { email: [email] },
+    );
+    const user = result.users?.find(
+      (user) => user.email?.toLowerCase() === email,
+    );
+    if (!user || user.disabled)
+      throw Error("A conta autorizada não está disponível.");
+    const grant = await request(
+      `https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/admins/${encodeURIComponent(user.localId)}`,
+    );
+    const release = await request(
+      `https://firebaserules.googleapis.com/v1/projects/${project}/releases/cloud.firestore`,
+    );
+    const ruleset = await request(
+      `https://firebaserules.googleapis.com/v1/${release.rulesetName}`,
+    );
+    const { readFileSync } = require("node:fs");
+    const { createHash } = require("node:crypto");
+    const local = readFileSync("firestore.rules", "utf8").trim();
+    const active = ruleset.source?.files
+      ?.find((file) => file.name.endsWith("firestore.rules"))
+      ?.content?.trim();
+    const authConfig = await request(`https://identitytoolkit.googleapis.com/admin/v2/projects/${project}/config`);
+    const verified = {
+      project,
+      email,
+      adminGranted: grant.fields?.granted?.booleanValue === true,
+      emailSignInEnabled: authConfig.signIn?.email?.enabled === true,
+      primaryDomainAuthorized: authConfig.authorizedDomains?.includes("geevheitacademy.vercel.app") === true,
+      firestoreRulesMatchLocal: active === local,
+      rulesetName: release.rulesetName,
+      rulesUpdatedAt: release.updateTime,
+      localRulesSha256: createHash("sha256").update(local).digest("hex"),
+    };
+    console.log(JSON.stringify(verified));
+    if (!verified.adminGranted || !verified.firestoreRulesMatchLocal || !verified.emailSignInEnabled || !verified.primaryDomainAuthorized)
+      process.exitCode = 1;
+  } else if (process.argv[2] === "grant-admin") {
     const email = process.argv[3];
     if (email !== "getuliopedromoreirafilho@gmail.com")
       throw Error("A administração é exclusiva da conta do proprietário.");

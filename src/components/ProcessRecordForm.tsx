@@ -106,10 +106,15 @@ export function ProcessRecordForm({
         )}
       <fieldset disabled={disabled}>
         {stage.fields.map((field) => (
-          <label key={field.key}>
+          <label
+            key={field.key}
+            htmlFor={`process-${mission.step}-${field.key}`}
+          >
             {field.label}
             {field.options ? (
               <select
+                id={`process-${mission.step}-${field.key}`}
+                aria-label={field.label}
                 required={!field.optional}
                 value={values[field.key] ?? ""}
                 onChange={(e) => {
@@ -124,6 +129,8 @@ export function ProcessRecordForm({
               </select>
             ) : (
               <input
+                id={`process-${mission.step}-${field.key}`}
+                aria-label={field.label}
                 required={!field.optional}
                 type={field.type === "number" ? "number" : "text"}
                 min={field.min}

@@ -403,3 +403,132 @@ it("permite cancelamento pelo aluno, bloqueia novas aprovações e mantém acess
     }),
   );
 });
+it("permite ao proprietário gerenciar alunos e mantém histórico e permissões privados", async () => {
+  const { getDocs, collection, serverTimestamp, Timestamp } =
+    await import("firebase/firestore");
+  const admin = env
+    .authenticatedContext("operator", {
+      email: "getuliopedromoreirafilho@gmail.com",
+    })
+    .firestore();
+  const student = env
+    .authenticatedContext("override-user", { email: "override@example.com" })
+    .firestore();
+  const ref = doc(student, "userAccess/override-user");
+  const access = {
+    blocked: false,
+    manualExpiresAt: Timestamp.fromMillis(Date.now() + 86400000),
+    reason: "Treinamento da equipe",
+    updatedBy: "operator",
+    updatedAt: serverTimestamp(),
+  };
+  await assertFails(setDoc(ref, { ...access, updatedBy: "override-user" }));
+  await assertSucceeds(setDoc(doc(admin, "userAccess/override-user"), access));
+  const m = { ...createMission(defaults), revision: 1 };
+  await assertSucceeds(
+    setDoc(doc(student, "users/override-user/missions", m.id), m),
+  );
+  await assertSucceeds(
+    updateDoc(doc(admin, "userAccess/override-user"), {
+      blocked: true,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    updateDoc(doc(student, "users/override-user/missions", m.id), {
+      revision: 2,
+    }),
+  );
+  await assertSucceeds(
+    updateDoc(doc(admin, "userAccess/override-user"), {
+      blocked: false,
+      manualExpiresAt: Timestamp.fromMillis(0),
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    updateDoc(doc(student, "users/override-user/missions", m.id), {
+      revision: 2,
+    }),
+  );
+  await assertFails(setDoc(doc(admin, "userAccess/operator"), access));
+  await assertFails(getDocs(collection(student, "users")));
+  await assertSucceeds(getDocs(collection(admin, "users")));
+  const audit = {
+    actorUid: "operator",
+    action: "access.grant",
+    targetUid: "override-user",
+    details: "Liberação para exercício supervisionado",
+    at: serverTimestamp(),
+  };
+  await assertSucceeds(setDoc(doc(admin, "adminAudit/entry"), audit));
+  await assertFails(
+    setDoc(doc(student, "adminAudit/forged"), {
+      ...audit,
+      actorUid: "override-user",
+    }),
+  );
+  await assertFails(getDoc(doc(student, "adminAudit/entry")));
+  await assertFails(
+    updateDoc(doc(admin, "adminAudit/entry"), { details: "Alterado" }),
+  );
+});
+it("aplica manutenção no servidor para alunos sem impedir o administrador geral", async () => {
+  const { serverTimestamp, Timestamp } = await import("firebase/firestore");
+  const admin = env
+    .authenticatedContext("operator", {
+      email: "getuliopedromoreirafilho@gmail.com",
+    })
+    .firestore();
+  const student = env.authenticatedContext("override-user").firestore();
+  await assertSucceeds(
+    setDoc(doc(admin, "userAccess/override-user"), {
+      blocked: false,
+      manualExpiresAt: Timestamp.fromMillis(Date.now() + 86400000),
+      reason: "Liberação supervisionada",
+      updatedAt: serverTimestamp(),
+      updatedBy: "operator",
+    }),
+  );
+  const platform = {
+    maintenance: true,
+    supportEmail: "suporte@example.com",
+    updatedBy: "operator",
+    updatedAt: serverTimestamp(),
+  };
+  await assertFails(
+    setDoc(doc(student, "platform/config"), {
+      ...platform,
+      updatedBy: "override-user",
+    }),
+  );
+  await assertSucceeds(setDoc(doc(admin, "platform/config"), platform));
+  const blocked = { ...createMission(defaults), revision: 1 };
+  await assertFails(
+    setDoc(doc(student, "users/override-user/missions", blocked.id), blocked),
+  );
+  const own = { ...createMission(defaults), revision: 1 };
+  await assertSucceeds(
+    setDoc(doc(admin, "users/operator/missions", own.id), own),
+  );
+  await assertSucceeds(
+    updateDoc(doc(admin, "platform/config"), {
+      maintenance: false,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  await assertSucceeds(
+    setDoc(doc(student, "users/override-user/missions", blocked.id), blocked),
+  );
+});
+it("rejeita números substituídos por texto, booleano, lista ou mapa", async () => {
+  const db = env.authenticatedContext("alice").firestore();
+  for (const value of ["100", false, [], {}, null]) {
+    const m = {
+      ...createMission(defaults),
+      revision: 1,
+      input: { ...defaults, freight: value },
+    };
+    await assertFails(setDoc(doc(db, "users/alice/missions", m.id), m));
+  }
+});

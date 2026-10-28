@@ -1,10 +1,27 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
-  function admin() { return request.auth != null && request.auth.token.get('email','') == 'getuliopedromoreirafilho@gmail.com' && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+  function admin() { return request.auth != null && request.auth.token.get('email','') == 'getuliopedromoreirafilho@gmail.com' && exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.granted == true; }
   function trialActive(uid) { return exists(/databases/$(database)/documents/trials/$(uid)) && get(/databases/$(database)/documents/trials/$(uid)).data.startedAt + duration.value(3,'d') > request.time; }
   function cancellation(uid) { return exists(/databases/$(database)/documents/subscriptionPreferences/$(uid)) && get(/databases/$(database)/documents/subscriptionPreferences/$(uid)).data.canceled; }
-  function subscribed(uid) { return admin() || trialActive(uid) || (exists(/databases/$(database)/documents/subscriptions/$(uid)) && get(/databases/$(database)/documents/subscriptions/$(uid)).data.expiresAt > request.time); }
+  function blocked(uid) { return exists(/databases/$(database)/documents/userAccess/$(uid)) && get(/databases/$(database)/documents/userAccess/$(uid)).data.blocked; }
+  function maintenance() { return exists(/databases/$(database)/documents/platform/config) && get(/databases/$(database)/documents/platform/config).data.maintenance; }
+  function manualAccess(uid) { return exists(/databases/$(database)/documents/userAccess/$(uid)) && get(/databases/$(database)/documents/userAccess/$(uid)).data.manualExpiresAt > request.time; }
+  function subscribed(uid) { return admin() || (!blocked(uid) && !maintenance() && (trialActive(uid) || manualAccess(uid) || (exists(/databases/$(database)/documents/subscriptions/$(uid)) && get(/databases/$(database)/documents/subscriptions/$(uid)).data.expiresAt > request.time))); }
+  match /userAccess/{uid} {
+   allow read: if owner(uid) || admin();
+   allow create,update: if admin() && uid != request.auth.uid && request.resource.data.keys().hasOnly(['blocked','manualExpiresAt','reason','updatedBy','updatedAt']) && request.resource.data.blocked is bool && request.resource.data.manualExpiresAt is timestamp && request.resource.data.manualExpiresAt >= timestamp.date(1970,1,1) && request.resource.data.manualExpiresAt <= request.time + duration.value(367,'d') && text(request.resource.data.reason,300) && request.resource.data.updatedBy == request.auth.uid && request.resource.data.updatedAt == request.time;
+   allow delete: if false;
+  }
+  match /platform/config {
+   allow read: if true;
+   allow create,update: if admin() && request.resource.data.keys().hasOnly(['maintenance','supportEmail','updatedAt','updatedBy']) && request.resource.data.maintenance is bool && text(request.resource.data.supportEmail,254) && request.resource.data.updatedBy == request.auth.uid && request.resource.data.updatedAt == request.time;
+  }
+  match /adminAudit/{id} {
+   allow read: if admin();
+   allow create: if admin() && request.resource.data.keys().hasOnly(['actorUid','action','targetUid','details','at']) && request.resource.data.actorUid == request.auth.uid && text(request.resource.data.action,100) && text(request.resource.data.targetUid,128) && text(request.resource.data.details,500) && request.resource.data.at == request.time;
+   allow update,delete: if false;
+  }
   match /trials/{uid} {
    allow read: if owner(uid) || admin();
    allow create: if owner(uid) && request.resource.data.keys().hasOnly(['startedAt']) && request.resource.data.startedAt == request.time;
@@ -26,7 +43,7 @@ service cloud.firestore {
   }
   match /paymentRequests/{id} {
    allow read: if request.auth != null && (resource.data.uid == request.auth.uid || admin());
-   allow create: if request.auth != null && !cancellation(request.auth.uid) && request.resource.data.keys().hasOnly(['uid','email','status','priceCents','days','planName','createdAt','payerName','reference']) && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email && request.resource.data.status == 'pending' && text(request.resource.data.payerName,150) && text(request.resource.data.reference,150) && request.resource.data.createdAt == request.time && get(/databases/$(database)/documents/billing/config).data.enabled && request.resource.data.priceCents == get(/databases/$(database)/documents/billing/config).data.priceCents && request.resource.data.days == get(/databases/$(database)/documents/billing/config).data.days && request.resource.data.planName == get(/databases/$(database)/documents/billing/config).data.name;
+   allow create: if request.auth != null && !blocked(request.auth.uid) && !cancellation(request.auth.uid) && request.resource.data.keys().hasOnly(['uid','email','status','priceCents','days','planName','createdAt','payerName','reference']) && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email && request.resource.data.status == 'pending' && text(request.resource.data.payerName,150) && text(request.resource.data.reference,150) && request.resource.data.createdAt == request.time && get(/databases/$(database)/documents/billing/config).data.enabled && request.resource.data.priceCents == get(/databases/$(database)/documents/billing/config).data.priceCents && request.resource.data.days == get(/databases/$(database)/documents/billing/config).data.days && request.resource.data.planName == get(/databases/$(database)/documents/billing/config).data.name;
    allow update: if request.auth != null && resource.data.status == 'pending' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','reviewedBy','reviewedAt']) && request.resource.data.reviewedBy == request.auth.uid && request.resource.data.reviewedAt == request.time && ((admin() && request.resource.data.status in ['approved','rejected'] && (request.resource.data.status == 'rejected' || !cancellation(resource.data.uid))) || (owner(resource.data.uid) && request.resource.data.status == 'canceled' && getAfter(/databases/$(database)/documents/subscriptionPreferences/$(resource.data.uid)).data.canceled));
   }
   function owner(uid) { return request.auth != null && request.auth.uid == uid; }
@@ -54,19 +71,21 @@ service cloud.firestore {
    let rewind = d.schemaVersion == 2 && old.step < 25 && d.step in [5,9,14] && d.step < old.step && !d.completed && d.processRecords.diff(old.processRecords).addedKeys().size() == 0 && d.processRecords.diff(old.processRecords).changedKeys().size() == 0;
    return d.schemaVersion == old.schemaVersion && d.get('mode','complete') == old.get('mode','complete') && d.get('expectedPackages',0) == old.get('expectedPackages',0) && (d.schemaVersion == 1 || reset || rewind || ((d.step == old.step || d.step == old.step + 1) && d.processRecords.diff(old.processRecords).affectedKeys().hasOnly([key]) && (!(key in d.processRecords) || processRecord(d.processRecords[key])) && ((d.step == old.step && !d.completed) || key in d.processRecords)));
   }
-  function numberRange(v,low,high) { return v is number && v >= low && v <= high; }
-  function parameters(p) { return p.keys().hasOnly(['name', 'client', 'origin', 'destination', 'cargo', 'vehicle', 'driver', 'difficulty', 'route', 'freight', 'distance', 'speed', 'consumption', 'diesel', 'toll', 'driverHourly', 'maintenance', 'daily', 'food', 'miscellaneous', 'loading', 'unloading', 'pauseEvery', 'pauseDuration', 'shiftHours', 'restHours', 'deadline', 'routePlan']) && text(p.name,100) && text(p.client,100) && text(p.origin,100) && text(p.destination,100) && text(p.cargo,100) && text(p.vehicle,100) && text(p.driver,100) && p.difficulty in ['Iniciante','Intermediária','Avançada'] && p.route in ['curta','economica','rapida'] && numberRange(p.freight,0,1000000000000) && numberRange(p.distance,0.000001,10000) && numberRange(p.speed,1,80) && numberRange(p.consumption,0.000001,30) && numberRange(p.diesel,0.000001,100) && numberRange(p.toll,0,1000000000000) && numberRange(p.driverHourly,0,1000000000000) && numberRange(p.maintenance,0,1000000000000) && numberRange(p.daily,0,1000000000000) && numberRange(p.food,0,1000000000000) && numberRange(p.miscellaneous,0,1000000000000) && numberRange(p.loading,0,1000000000000) && numberRange(p.unloading,0,1000000000000) && numberRange(p.pauseEvery,0.25,1000000000000) && numberRange(p.pauseDuration,0,1000000000000) && numberRange(p.shiftHours,0.25,1000000000000) && numberRange(p.restHours,0,1000000000000) && numberRange(p.deadline,0.000001,1000000000000) && (!('routePlan' in p) || routePlan(p.routePlan)); }
+  function atLeast(v,low) { return v >= low; }
+  function positive(v) { return v > 0; }
+  function numberRange(v,low,high) { return v >= low && v <= high; }
+  function parameters(p) { return p.keys().hasOnly(['name', 'client', 'origin', 'destination', 'cargo', 'vehicle', 'driver', 'difficulty', 'route', 'freight', 'distance', 'speed', 'consumption', 'diesel', 'toll', 'driverHourly', 'maintenance', 'daily', 'food', 'miscellaneous', 'loading', 'unloading', 'pauseEvery', 'pauseDuration', 'shiftHours', 'restHours', 'deadline', 'routePlan']) && text(p.name,100) && text(p.client,100) && text(p.origin,100) && text(p.destination,100) && text(p.cargo,100) && text(p.vehicle,100) && text(p.driver,100) && p.difficulty in ['Iniciante','Intermediária','Avançada'] && p.route in ['curta','economica','rapida'] && nonnegative(p.freight) && numberRange(p.distance,0.000001,10000) && numberRange(p.speed,1,80) && numberRange(p.consumption,0.000001,30) && numberRange(p.diesel,0.000001,100) && nonnegative(p.toll) && nonnegative(p.driverHourly) && nonnegative(p.maintenance) && nonnegative(p.daily) && nonnegative(p.food) && nonnegative(p.miscellaneous) && nonnegative(p.loading) && nonnegative(p.unloading) && atLeast(p.pauseEvery,0.25) && nonnegative(p.pauseDuration) && atLeast(p.shiftHours,0.25) && nonnegative(p.restHours) && positive(p.deadline) && (!('routePlan' in p) || routePlan(p.routePlan)); }
 
   function coordinate(p) {
    let lat = p.lat;
    let lng = p.lng;
-   return p is map && p.keys().hasOnly(['lat','lng']) && lat is number && lng is number && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+   return p.keys().hasOnly(['lat','lng']) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
   }
   function routePlan(p) {
    let stops = p.stops;
    let legs = p.legs;
    let geometry = p.geometry;
-   return p is map && p.keys().hasOnly(['stops','geometry','legs','provider','calculatedAt']) && p.provider == 'OSRM' && text(p.calculatedAt,40) && stops is list && stops.size() >= 2 && stops.size() <= 8 && stops[0] is map && stops[stops.size()-1] is map && legs is list && legs.size() == stops.size()-1 && legs[0] is map && legs[legs.size()-1] is map && geometry is list && geometry.size() >= 2 && geometry.size() <= 2500 && coordinate(geometry[0]) && coordinate(geometry[geometry.size()-1]);
+   return p.keys().hasOnly(['stops','geometry','legs','provider','calculatedAt']) && p.provider == 'OSRM' && text(p.calculatedAt,40) && stops is list && stops.size() >= 2 && stops.size() <= 8 && stops[0] is map && stops[stops.size()-1] is map && legs is list && legs.size() == stops.size()-1 && legs[0] is map && legs[legs.size()-1] is map && geometry is list && geometry.size() >= 2 && geometry.size() <= 2500 && coordinate(geometry[0]) && coordinate(geometry[geometry.size()-1]);
   }
   function inputUpdate(p, old) {
    let changed = p.diff(old).affectedKeys();
@@ -78,7 +97,7 @@ service cloud.firestore {
     && (!changed.hasAny(['speed','consumption','diesel','pauseEvery','pauseDuration','shiftHours','restHours','deadline']) || (p.speed is number && p.speed >= 1 && p.speed <= 80 && p.consumption is number && p.consumption > 0 && p.consumption <= 30 && p.diesel is number && p.diesel > 0 && p.diesel <= 100 && p.pauseEvery is number && p.pauseEvery >= 0.25 && nonnegative(p.pauseDuration) && p.shiftHours is number && p.shiftHours >= 0.25 && nonnegative(p.restHours) && p.deadline is number && p.deadline > 0))
     && (!changed.hasAny(['routePlan']) || !('routePlan' in p) || routePlan(p.routePlan));
   }
-  function nonnegative(v) { return v is number && v >= 0; }
+  function nonnegative(v) { return v >= 0; }
   function createMissionAllowed(uid,id) {
    let d = request.resource.data;
    return owner(uid) && subscribed(uid) && d.revision == 1 && d.step == firstStep(d) && !d.completed && mission(id) && (d.schemaVersion == 1 || d.processRecords.size() == 0) && parameters(d.input);
@@ -89,7 +108,8 @@ service cloud.firestore {
    return owner(uid) && subscribed(uid) && !previous.completed && d.revision == previous.revision + 1 && d.createdAt == previous.createdAt && mission(id) && workflowUpdate() && d.input.difficulty == previous.input.difficulty && (d.input == previous.input || (previous.step < departure(previous) && d.step == previous.step && inputUpdate(d.input,previous.input)));
   }
   match /users/{uid} {
-   allow read,delete: if owner(uid);
+   allow read: if owner(uid) || admin();
+   allow delete: if owner(uid);
    allow create: if owner(uid) && profile();
    allow update: if owner(uid) && profile() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.email == resource.data.email;
    match /missions/{id} {

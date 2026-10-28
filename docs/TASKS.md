@@ -31,7 +31,8 @@
 - [x] Criar solicitação de conferência e aprovação transacional da assinatura.
 - [x] Aplicar restrição de assinatura na interface e nas regras de gravação de missões.
 - [x] Identificar e conceder ao proprietário o primeiro acesso administrativo no Firebase.
-- [ ] Publicar regras/aplicação e validar Pix e acesso em produção.
+- [x] Publicar regras/aplicação e confirmar conta administrativa e domínio em produção (28/10/2026).
+- [ ] Proprietário configurar valores/chave Pix e conferir o primeiro recebimento real.
 - [x] Build de produção e 19 testes da aplicação aprovados.
 - [x] Navegador com emuladores: alinhamento, configuração administrativa, bloqueio do aluno, Pix e liberação; capturas em `docs/qa/billing-*.png`.
 - [x] Permissão administrativa para `getuliopedromoreirafilho@gmail.com` concedida e confirmada por leitura no Firebase após cadastro pelo proprietário.
@@ -44,7 +45,7 @@
 - [x] Ajustar viagem, comprovante, pontuação, dashboard e comunicação pública.
 - [x] Permitir replanejamento antes da saída, invalidando registros posteriores.
 - [x] Testes: 24 da aplicação e 8 de regras; ciclo completo de 40 processos, retomada em outro navegador, Pix, administração exclusiva e mobile sem overflow.
-- [ ] Publicar regras e aplicação para disponibilizar no site.
+- [x] Publicar regras e aplicação no site principal (28/10/2026).
 
 ## Conversa simulada na negociação — 27/10/2026
 - [x] Abrir janela na etapa de negociação com cliente e representante comercial.
@@ -52,3 +53,15 @@
 - [x] Salvar o acordo no registro da etapa e no frete da missão.
 - [x] Manter mapa e controles normais durante o transporte.
 - [x] Build e 26 testes da aplicação aprovados; navegador confirmou diálogo desktop/mobile, preço inválido bloqueado, acordo salvo e recuperado, fechar/reabrir com Escape, mapa na etapa de transporte e conclusão das 40 etapas.
+
+## correcao.md e central do administrador geral — 28/10/2026
+- [x] Ler e implementar modalidades comercial (12), transporte (10) e completa (40).
+- [x] Aplicar desafios por dificuldade e precificação configurável.
+- [x] Criar demonstração animada com contador de km, pausa e preferência por movimento reduzido.
+- [x] Criar manual, apresentação comercial, teste de 3 dias e cancelamento.
+- [x] Confirmar no Firebase a conta e a permissão exclusiva do proprietário.
+- [x] Criar central com indicadores, alunos, acessos, plano/Pix, pagamentos e auditoria.
+- [x] Proteger liberação manual, bloqueio e manutenção no servidor.
+- [x] Validar 31 testes da aplicação e 14 de regras.
+- [x] Navegador integrado: modos comercial avançado e transporte, operação completa de 40 processos, negociação, trial, cancelamento, pagamento Pix, liberação/bloqueio administrativo, manutenção, auditoria e celular sem overflow.
+- [x] Central publicada no domínio principal, Vercel READY, regra ativa idêntica à validada e proprietário confirmado no Firebase. Evidência: `docs/qa/admin-production-verification.json`.

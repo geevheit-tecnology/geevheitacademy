@@ -29,3 +29,19 @@ Revisão de movimento por etapas e perfil publicada READY em 15/10/2026: https:/
 Layout operacional compacto publicado READY em 15/10/2026: https://geevheitacademy-21ulx82ax-geevheits-projects.vercel.app . Deployment dpl_9KXCq7RHx33Ewg1Cqj9tdnQDBt1u. Build remoto aprovado.
 
 Explicações transitórias de etapa publicadas READY: https://geevheitacademy-ddlgt6puh-geevheits-projects.vercel.app . Deployment dpl_13wXcNdJphF2pfnfWPyGZ6uKRKX3. Build remoto aprovado e comportamento validado no Chrome local.
+
+
+## Central geral e correcao.md — 28/10/2026
+
+Publicação de produção autorizada pelo proprietário nesta sessão. Build enviado pela CLI a partir da cópia de trabalho, com configuração pública Firebase validada para `transportsim360-academy`. Não houve commit ou push pelo agente.
+
+- Produção: https://geevheitacademy.vercel.app ; central: https://geevheitacademy.vercel.app/admin .
+- Deployment: `dpl_5WSh6Pb4NaurwXm9FhDTftNQmAZj`, `target=production`, `READY`.
+- URL da versão: https://geevheitacademy-ndt3ybhqh-geevheits-projects.vercel.app .
+- Sequência: `node scripts/deploy-release.cjs --production --hold-domains`, publicação de `firestore:rules` no projeto autorizado e `vercel promote` da versão READY. Consulta `vercel inspect geevheitacademy.vercel.app` confirmou o mesmo deployment.
+- Ruleset ativo: `projects/transportsim360-academy/rulesets/07779836-8eda-474b-be3a-1e3e3ae7868c`. SHA-256 do conteúdo canônico: `908910d42f74b63a8e9f60bb8698534c929048ae32b28f35e2abcd9355564f19`.
+- Verificação por leitura: proprietário habilitado, login e-mail/senha ativo, domínio principal autorizado e regras ativas idênticas às locais.
+- Validação local: build aprovado, 31 testes da aplicação, 14 de regras e três fluxos de navegador (modos/dificuldades, 40 processos/negociação, central/Pix/cancelamento/manutenção/auditoria). Responsividade exercida por viewport de celular no Chrome.
+- Evidência estruturada: `docs/qa/admin-production-verification.json`; capturas da central em `docs/qa/admin-general-*.png`.
+
+Os valores comerciais e a chave Pix devem ser definidos pelo proprietário em Plano e Pix. Pagamentos reais não foram feitos pelo agente. A senha real do proprietário não foi usada; a autenticação/autorizações publicadas foram conferidas pelas APIs e o fluxo autenticado foi validado em emuladores.

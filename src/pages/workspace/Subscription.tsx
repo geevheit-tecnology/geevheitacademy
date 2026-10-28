@@ -19,6 +19,10 @@ export function Subscription() {
   const {
     config,
     expiresAt,
+    manualExpiresAt,
+    blocked,
+    maintenance,
+    supportEmail,
     trialEndsAt,
     hasTrial,
     canceled,
@@ -87,6 +91,27 @@ export function Subscription() {
     <section className="billing-page">
       <h1>Minha assinatura</h1>
       {error && <p role="alert">{error}</p>}
+      {blocked && (
+        <div role="alert" className="notice">
+          <b>Acesso aos treinamentos bloqueado pelo administrador.</b>
+          <p>
+            Consulte o suporte: {supportEmail}. Pagar ou reativar a assinatura
+            não remove esse bloqueio.
+          </p>
+        </div>
+      )}
+      {maintenance && (
+        <div role="status" className="notice">
+          Os treinamentos estão pausados para manutenção. Sua conta e sua
+          assinatura continuam disponíveis.
+        </div>
+      )}
+      {manualExpiresAt > now && (
+        <p className="notice">
+          Liberação administrativa vigente até{" "}
+          {new Date(manualExpiresAt).toLocaleString("pt-BR")}.
+        </p>
+      )}
       <p>
         {expiresAt > now
           ? `Acesso liberado até ${new Date(expiresAt).toLocaleString("pt-BR")}.`
@@ -156,7 +181,7 @@ export function Subscription() {
       </article>
       <article className="billing-card">
         <h2>{config.name}</h2>
-        {config.enabled && !canceled ? (
+        {config.enabled && !canceled && !blocked ? (
           <>
             <strong className="billing-price">
               {currency(config.priceCents)} / {config.days} dias
@@ -223,9 +248,11 @@ export function Subscription() {
           </>
         ) : (
           <p>
-            {canceled
-              ? "Reative sua assinatura para informar novos pagamentos por Pix."
-              : "Assinaturas ainda não disponíveis para contratação."}
+            {blocked
+              ? "Consulte o administrador antes de informar novos pagamentos."
+              : canceled
+                ? "Reative sua assinatura para informar novos pagamentos por Pix."
+                : "Assinaturas ainda não disponíveis para contratação."}
           </p>
         )}
       </article>

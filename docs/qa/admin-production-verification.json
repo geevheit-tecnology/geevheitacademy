@@ -1,0 +1,30 @@
+{
+  "project": "transportsim360-academy",
+  "email": "getuliopedromoreirafilho@gmail.com",
+  "adminGranted": true,
+  "emailSignInEnabled": true,
+  "primaryDomainAuthorized": true,
+  "firestoreRulesMatchLocal": true,
+  "rulesetName": "projects/transportsim360-academy/rulesets/07779836-8eda-474b-be3a-1e3e3ae7868c",
+  "rulesUpdatedAt": "2026-10-28T09:05:41.771549Z",
+  "localRulesSha256": "908910d42f74b63a8e9f60bb8698534c929048ae32b28f35e2abcd9355564f19",
+  "verifiedAt": "2026-10-28T09:09:40.450222+00:00",
+  "deployment": {
+    "id": "dpl_5WSh6Pb4NaurwXm9FhDTftNQmAZj",
+    "status": "READY",
+    "target": "production",
+    "primaryUrl": "https://geevheitacademy.vercel.app",
+    "adminUrl": "https://geevheitacademy.vercel.app/admin",
+    "buildUrl": "https://geevheitacademy-ndt3ybhqh-geevheits-projects.vercel.app"
+  },
+  "validation": {
+    "applicationTestsPassed": 31,
+    "firestoreTestsPassed": 14,
+    "browserModesPassed": true,
+    "browserEnterprisePassed": true,
+    "browserGeneralAdministrationPassed": true,
+    "productionOwnerPasswordUsed": false,
+    "productionBankPaymentPerformed": false,
+    "ownerLogoutLoginRedirectPassed": true
+  }
+}

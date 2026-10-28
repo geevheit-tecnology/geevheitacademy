@@ -29,6 +29,10 @@ export function useBilling() {
   const [trialEndsAt, setTrialEndsAt] = useState(0);
   const [hasTrial, setHasTrial] = useState(false);
   const [canceled, setCanceled] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const [manualExpiresAt, setManualExpiresAt] = useState(0);
+  const [maintenance, setMaintenance] = useState(false);
+  const [supportEmail, setSupportEmail] = useState(administratorEmail);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30000);
@@ -42,6 +46,8 @@ export function useBilling() {
     setTrialEndsAt(0);
     setHasTrial(false);
     setCanceled(false);
+    setBlocked(false);
+    setManualExpiresAt(0);
     setLoading(true);
     setError("");
     if (!db) {
@@ -51,8 +57,16 @@ export function useBilling() {
     }
     const pending = new Set(
       user
-        ? ["config", "admin", "subscription", "trial", "preferences"]
-        : ["config"],
+        ? [
+            "config",
+            "platform",
+            "admin",
+            "subscription",
+            "trial",
+            "preferences",
+            "access",
+          ]
+        : ["config", "platform"],
     );
     const done = (key: string) => {
       pending.delete(key);
@@ -72,13 +86,30 @@ export function useBilling() {
       },
       fail("config"),
     );
-    const stops = [stop];
+    const stops = [
+      stop,
+      onSnapshot(
+        doc(db, "platform/config"),
+        (snap) => {
+          setMaintenance(snap.exists() && snap.data().maintenance === true);
+          setSupportEmail(
+            snap.exists() ? snap.data().supportEmail : administratorEmail,
+          );
+          done("platform");
+        },
+        fail("platform"),
+      ),
+    ];
     if (user) {
       stops.push(
         onSnapshot(
           doc(db, "admins", user.uid),
           (snap) => {
-            setAdmin(user.email === administratorEmail && snap.exists());
+            setAdmin(
+              user.email === administratorEmail &&
+                snap.exists() &&
+                snap.data().granted === true,
+            );
             done("admin");
           },
           fail("admin"),
@@ -122,6 +153,22 @@ export function useBilling() {
         ),
       );
     }
+    if (user)
+      stops.push(
+        onSnapshot(
+          doc(db, "userAccess", user.uid),
+          (snap) => {
+            setBlocked(snap.exists() && snap.data().blocked === true);
+            setManualExpiresAt(
+              snap.exists()
+                ? (snap.data().manualExpiresAt?.toMillis() ?? 0)
+                : 0,
+            );
+            done("access");
+          },
+          fail("access"),
+        ),
+      );
     return () => stops.forEach((stop) => stop());
   }, [user]);
   return {
@@ -131,7 +178,11 @@ export function useBilling() {
     trialEndsAt,
     hasTrial,
     canceled,
-    active: Math.max(expiresAt, trialEndsAt) > now,
+    active: !blocked && Math.max(expiresAt, trialEndsAt, manualExpiresAt) > now,
+    blocked,
+    manualExpiresAt,
+    maintenance,
+    supportEmail,
     now,
     loading,
     error,
