@@ -1,3 +1,7 @@
+import { trainingModes, difficultyRules } from "../../domain/training";
+import { NegotiationScene } from "../../components/NegotiationScene";
+import { ProcessRecordForm } from "../../components/ProcessRecordForm";
+import { enterpriseWorkflow } from "../../domain/workflow";
 import {
   StageNotice,
   type StageNoticeData,
@@ -26,11 +30,19 @@ import {
   advance,
   calculate,
   occurrenceTypes,
-  requirements,
+  missionRequirements,
+  missionStages,
+  missionStageName,
+  missionPosition,
+  missionMode,
+  missionSequence,
+  lastMissionStep,
+  travelStart,
+  podSteps,
+  reopenPlanning,
   resolveOccurrence,
   routes,
   score,
-  stages,
   type OccurrenceKind,
 } from "../../domain/mission";
 import { useAuth } from "../../features/auth/AuthContext";
@@ -69,6 +81,9 @@ export function Operation() {
       </div>
     );
   const m = mission;
+  const stages = missionStages(m);
+  const requirements = missionRequirements(m);
+  const pod = podSteps(m);
   const calc = calculate(m.input, m.occurrences);
   const result = score(m);
   function transition() {
@@ -76,11 +91,12 @@ export function Operation() {
       const next = advance(m);
       void save(next).then((success) => {
         if (success) {
-          setLastCompleted(stages[m.step]);
+          setLastCompleted(missionStageName(m));
           setNotice({
             id: Date.now(),
             step: next.step,
             completed: next.completed,
+            schemaVersion: m.schemaVersion,
           });
         }
       });
@@ -160,6 +176,14 @@ export function Operation() {
           value={`${calc.totalHours.toFixed(1)} h`}
         />
       </div>
+      {m.schemaVersion === 2 && (
+        <div className="training-summary">
+          <b>
+            {trainingModes[missionMode(m)].label} · {m.input.difficulty}
+          </b>
+          <p>{difficultyRules[m.input.difficulty].description}</p>
+        </div>
+      )}
       <div className="tabs">
         {[
           ["operacao", "Operação"],
@@ -179,7 +203,34 @@ export function Operation() {
       </div>
       {tab === "operacao" && (
         <>
-          {m.step < 8 && !m.completed && (
+          {m.schemaVersion === 2 &&
+            m.step > 5 &&
+            m.step < 25 &&
+            !m.completed && (
+              <div className="actions">
+                <span>Replanejar antes da saída:</span>
+                {([5, 9, 14] as const)
+                  .filter((step) => step < m.step)
+                  .map((step) => (
+                    <button
+                      className="secondary"
+                      key={step}
+                      disabled={busy || !!pending}
+                      onClick={() => {
+                        if (
+                          confirm(
+                            "Retornar a esta etapa? Os registros posteriores precisarão ser refeitos, mantendo as ocorrências e seus impactos.",
+                          )
+                        )
+                          void save(reopenPlanning(m, step));
+                      }}
+                    >
+                      Voltar para {missionStageName(m, step).toLowerCase()}
+                    </button>
+                  ))}
+              </div>
+            )}
+          {m.step < travelStart(m) && !m.completed && (
             <div className="route-edit-actions">
               <button
                 className="secondary"
@@ -196,7 +247,7 @@ export function Operation() {
               </span>
             </div>
           )}
-          {showPlanner && m.step < 8 && (
+          {showPlanner && m.step < travelStart(m) && (
             <div className="panel">
               <RoutePlanner
                 value={m.input}
@@ -210,10 +261,22 @@ export function Operation() {
       {tab === "operacao" && (
         <div className="operation-grid compact-operation-grid">
           <section className="operation-map-column">
-            <RouteMap input={m.input} progress={missionProgress(m)} />
+            {m.schemaVersion === 2 && m.step === 9 ? (
+              <NegotiationScene
+                key={m.id}
+                mission={m}
+                disabled={busy || !!pending || m.completed}
+                onSave={save}
+              />
+            ) : (
+              <RouteMap input={m.input} progress={missionProgress(m)} />
+            )}
           </section>
           <aside ref={controlColumn} className="operation-control-column">
             <StageGuide
+              position={missionPosition(m)}
+              total={stages.length}
+              schemaVersion={m.schemaVersion}
               step={m.step}
               completed={m.completed}
               lastCompleted={lastCompleted}
@@ -222,6 +285,7 @@ export function Operation() {
                   id: Date.now(),
                   step: m.step,
                   completed: m.completed,
+                  schemaVersion: m.schemaVersion,
                 })
               }
             />
@@ -232,13 +296,23 @@ export function Operation() {
             />
             <div className="panel operation-checklist">
               <div className="panel-heading">
-                <span className="eyebrow">ETAPA {m.step + 1} DE 20</span>
+                <span className="eyebrow">
+                  ETAPA {missionPosition(m) + 1} DE {stages.length}
+                </span>
                 <span className="tag">
                   {m.completed ? "Concluída" : "Em andamento"}
                 </span>
               </div>
-              <h2>{stages[m.step]}</h2>
+              <h2>{missionStageName(m)}</h2>
 
+              {m.schemaVersion === 2 && (
+                <ProcessRecordForm
+                  key={`${m.id}:${m.step}:${m.step === 9 ? (m.processRecords?.["9"]?.savedAt ?? "") : ""}`}
+                  mission={m}
+                  disabled={busy || m.completed || !!pending}
+                  onSave={save}
+                />
+              )}
               {(requirements[m.step] ?? []).map((r, i) => (
                 <label className="check-row" key={r}>
                   <input
@@ -273,28 +347,28 @@ export function Operation() {
               >
                 {m.completed
                   ? "Treinamento concluído"
-                  : m.step === 19
+                  : m.step === lastMissionStep(m)
                     ? "Concluir treinamento"
                     : "Concluir etapa e avançar"}
                 <ArrowRight size={18} />
               </button>
             </div>
             <details className="operation-timeline-details">
-              <summary>Ver as 20 etapas</summary>
+              <summary>Ver as {stages.length} etapas</summary>
               <div className="timeline">
                 {stages.map((s, i) => (
                   <div
                     className={
-                      i === m.step
+                      i === missionPosition(m)
                         ? "current"
-                        : i < m.step || m.completed
+                        : i < missionPosition(m) || m.completed
                           ? "done"
                           : ""
                     }
                     key={s}
                   >
                     <span>
-                      {i < m.step || m.completed ? (
+                      {i < missionPosition(m) || m.completed ? (
                         <CheckCircle2 size={16} />
                       ) : (
                         String(i + 1).padStart(2, "0")
@@ -393,7 +467,7 @@ export function Operation() {
                   <label>
                     Ação corretiva / comunicação
                     <input
-                      minLength={5}
+                      minLength={m.input.difficulty === "Avançada" ? 20 : 5}
                       maxLength={500}
                       required
                       onChange={(e) => setAction(e.target.value)}
@@ -469,18 +543,24 @@ export function Operation() {
           </p>
           <p>
             Recebedor:{" "}
-            {m.checks["13:0"] ? "Aceite fictício registrado" : "Pendente"}
+            {m.checks[`${pod.acceptance}:0`]
+              ? "Aceite fictício registrado"
+              : "Pendente"}
           </p>
-          <p>Veículo vazio: {m.checks["14:0"] ? "Comunicado" : "Pendente"}</p>
+          <p>
+            Veículo vazio:{" "}
+            {m.checks[`${pod.empty}:0`] ? "Comunicado" : "Pendente"}
+          </p>
           <p>
             Comprovante:{" "}
-            {m.checks["15:0"] &&
+            {m.checks[`${pod.pod}:0`] &&
             !m.occurrences.some((o) => o.kind === "pod" && !o.resolved)
               ? "Completo — demonstrativo"
               : "Pendente"}
           </p>
           <p>
-            Conferência logística: {m.checks["16:0"] ? "Aprovada" : "Pendente"}
+            Conferência logística:{" "}
+            {m.checks[`${pod.audit}:0`] ? "Aprovada" : "Pendente"}
           </p>
           <button className="secondary" onClick={() => window.print()}>
             Imprimir comprovante
@@ -503,6 +583,39 @@ export function Operation() {
             ocorrências/pendências {result.deductions.decisions} − atraso{" "}
             {result.deductions.deadline} − prejuízo {result.deductions.margin}.
           </p>
+          {m.schemaVersion === 2 && (
+            <>
+              <h3>Registros dos {stages.length} processos</h3>
+              <div className="process-history">
+                {Object.entries(m.processRecords ?? {}).map(
+                  ([step, record]) => (
+                    <details key={step}>
+                      <summary>
+                        {Number(step) + 1}.{" "}
+                        {enterpriseWorkflow[Number(step)].name}
+                      </summary>
+                      <p>
+                        Salvo em{" "}
+                        {new Date(record.savedAt).toLocaleString("pt-BR")}
+                      </p>
+                      <dl>
+                        {Object.entries(record.values).map(([key, value]) => (
+                          <div key={key}>
+                            <dt>
+                              {enterpriseWorkflow[Number(step)].fields.find(
+                                (f) => f.key === key,
+                              )?.label ?? key}
+                            </dt>
+                            <dd>{value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </details>
+                  ),
+                )}
+              </div>
+            </>
+          )}
           <h3>Decisões e recomendações</h3>
           {m.occurrences.map((o) => (
             <p key={o.id}>
@@ -558,10 +671,11 @@ export function Operation() {
             )
               void save({
                 ...m,
-                step: 0,
+                step: missionSequence(m)[0],
                 journeyProgress: 0,
                 checks: {},
                 occurrences: [],
+                ...(m.schemaVersion === 2 ? { processRecords: {} } : {}),
               });
           }}
         >

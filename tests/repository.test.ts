@@ -51,7 +51,7 @@ it("persiste revisão crescente e rejeita sobrescrita antiga", async () => {
 it("conclusão inclui resultado e histórico na mesma transação", async () => {
   const repo = new FirestoreMissionRepository();
   const m = createMission(defaults);
-  const saved = await repo.save("alice", { ...m, step: 19, completed: true });
+  const saved = await repo.save("alice", { ...m, step: 39, completed: true });
   expect(fake.writes).toEqual([
     `users/alice/missions/${m.id}`,
     `users/alice/results/${m.id}`,

@@ -1,22 +1,101 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
+  function admin() { return request.auth != null && request.auth.token.get('email','') == 'getuliopedromoreirafilho@gmail.com' && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+  function trialActive(uid) { return exists(/databases/$(database)/documents/trials/$(uid)) && get(/databases/$(database)/documents/trials/$(uid)).data.startedAt + duration.value(3,'d') > request.time; }
+  function cancellation(uid) { return exists(/databases/$(database)/documents/subscriptionPreferences/$(uid)) && get(/databases/$(database)/documents/subscriptionPreferences/$(uid)).data.canceled; }
+  function subscribed(uid) { return admin() || trialActive(uid) || (exists(/databases/$(database)/documents/subscriptions/$(uid)) && get(/databases/$(database)/documents/subscriptions/$(uid)).data.expiresAt > request.time); }
+  match /trials/{uid} {
+   allow read: if owner(uid) || admin();
+   allow create: if owner(uid) && request.resource.data.keys().hasOnly(['startedAt']) && request.resource.data.startedAt == request.time;
+   allow update,delete: if false;
+  }
+  match /subscriptionPreferences/{uid} {
+   allow read: if owner(uid) || admin();
+   allow create,update: if owner(uid) && request.resource.data.keys().hasOnly(['canceled','updatedAt']) && request.resource.data.canceled is bool && request.resource.data.updatedAt == request.time;
+   allow delete: if false;
+  }
+  match /admins/{uid} { allow get: if owner(uid); allow list,write: if false; }
+  match /billing/config {
+   allow read: if true;
+   allow create,update: if admin() && request.resource.data.keys().hasOnly(['enabled','name','priceCents','days','pixKey','recipient']) && request.resource.data.enabled is bool && text(request.resource.data.name,100) && request.resource.data.priceCents is int && request.resource.data.priceCents > 0 && request.resource.data.priceCents <= 10000000 && request.resource.data.days is int && request.resource.data.days >= 1 && request.resource.data.days <= 366 && text(request.resource.data.pixKey,254) && text(request.resource.data.recipient,150);
+  }
+  match /subscriptions/{uid} {
+   allow read: if owner(uid) || admin();
+   allow create,update: if admin() && request.resource.data.keys().hasOnly(['expiresAt','paymentId','updatedAt']) && request.resource.data.expiresAt is timestamp && request.resource.data.updatedAt == request.time && getAfter(/databases/$(database)/documents/paymentRequests/$(request.resource.data.paymentId)).data.status == 'approved' && getAfter(/databases/$(database)/documents/paymentRequests/$(request.resource.data.paymentId)).data.uid == uid;
+  }
+  match /paymentRequests/{id} {
+   allow read: if request.auth != null && (resource.data.uid == request.auth.uid || admin());
+   allow create: if request.auth != null && !cancellation(request.auth.uid) && request.resource.data.keys().hasOnly(['uid','email','status','priceCents','days','planName','createdAt','payerName','reference']) && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email && request.resource.data.status == 'pending' && text(request.resource.data.payerName,150) && text(request.resource.data.reference,150) && request.resource.data.createdAt == request.time && get(/databases/$(database)/documents/billing/config).data.enabled && request.resource.data.priceCents == get(/databases/$(database)/documents/billing/config).data.priceCents && request.resource.data.days == get(/databases/$(database)/documents/billing/config).data.days && request.resource.data.planName == get(/databases/$(database)/documents/billing/config).data.name;
+   allow update: if request.auth != null && resource.data.status == 'pending' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','reviewedBy','reviewedAt']) && request.resource.data.reviewedBy == request.auth.uid && request.resource.data.reviewedAt == request.time && ((admin() && request.resource.data.status in ['approved','rejected'] && (request.resource.data.status == 'rejected' || !cancellation(resource.data.uid))) || (owner(resource.data.uid) && request.resource.data.status == 'canceled' && getAfter(/databases/$(database)/documents/subscriptionPreferences/$(resource.data.uid)).data.canceled));
+  }
   function owner(uid) { return request.auth != null && request.auth.uid == uid; }
   function text(v,n) { return v is string && v.size() > 0 && v.size() <= n; }
   function profile() { let d=request.resource.data; return d.keys().hasAll(['name','email','createdAt']) && d.keys().hasOnly(['name','email','createdAt']) && text(d.name,100) && text(d.email,254) && text(d.createdAt,40); }
-  function mission(id) { let d=request.resource.data; return d.keys().hasOnly(['id','input','step','checks','occurrences','createdAt','updatedAt','revision','schemaVersion','completed','journeyProgress']) && d.id == id && d.schemaVersion == 1 && d.step is int && d.step >= 0 && d.step <= 19 && d.completed is bool && (!d.completed || d.step == 19) && d.revision is int && d.revision > 0 && d.checks is map && d.checks.size() <= 50 && d.occurrences is list && d.occurrences.size() <= 100 && text(d.createdAt,40) && text(d.updatedAt,40) && d.input is map && (!('journeyProgress' in d) || (d.journeyProgress is number && d.journeyProgress >= 0 && d.journeyProgress <= 1)); }
-  function parameters(p) { return p is map && p.keys().hasOnly(['name','client','origin','destination','cargo','vehicle','driver','difficulty','route','freight','distance','speed','consumption','diesel','toll','driverHourly','maintenance','daily','food','miscellaneous','loading','unloading','pauseEvery','pauseDuration','shiftHours','restHours','deadline','routePlan']) && text(p.name,100) && text(p.client,100) && text(p.origin,100) && text(p.destination,100) && text(p.cargo,100) && text(p.vehicle,100) && text(p.driver,100) && p.difficulty in ['Iniciante','Intermediária','Avançada'] && p.route in ['curta','economica','rapida'] && p.freight is number && p.freight >= 0 && p.distance is number && p.distance > 0 && p.distance <= 10000 && p.speed is number && p.speed >= 1 && p.speed <= 80 && p.consumption is number && p.consumption > 0 && p.consumption <= 30 && p.diesel is number && p.diesel > 0 && p.diesel <= 100 && p.toll is number && p.toll >= 0 && p.driverHourly is number && p.driverHourly >= 0 && p.maintenance is number && p.maintenance >= 0 && p.daily is number && p.daily >= 0 && p.food is number && p.food >= 0 && p.miscellaneous is number && p.miscellaneous >= 0 && p.loading is number && p.loading >= 0 && p.unloading is number && p.unloading >= 0 && p.pauseEvery is number && p.pauseEvery >= 0.25 && p.pauseDuration is number && p.pauseDuration >= 0 && p.shiftHours is number && p.shiftHours >= 0.25 && p.restHours is number && p.restHours >= 0 && p.deadline is number && p.deadline > 0 && (!('routePlan' in p) || routePlan(p.routePlan)); }
+  function lastStep(d) { return d.schemaVersion == 1 ? 19 : d.get('mode','complete') == 'commercial' ? 11 : d.get('mode','complete') == 'transport' ? 34 : 39; }
+  function firstStep(d) { return d.schemaVersion == 2 && d.get('mode','complete') == 'transport' ? 25 : 0; }
+  function departure(d) { return d.schemaVersion == 1 ? 8 : 25; }
+  function processRecord(r) {
+   let v = r.values.values();
+   return r.keys().hasOnly(['values','savedAt']) && r.values is map && v.size() >= 2 && v.size() <= 4 && text(r.savedAt,40) && text(v[0],500) && text(v[1],500) && (v.size() < 3 || text(v[2],500)) && (v.size() < 4 || text(v[3],500));
+  }
+  function mission(id) {
+   let d = request.resource.data;
+   let mode = d.get('mode','complete');
+   let transport = d.schemaVersion == 2 && mode == 'transport';
+   let last = d.schemaVersion == 1 ? 19 : mode == 'commercial' ? 11 : transport ? 34 : 39;
+   return d.keys().hasOnly(['id','input','step','checks','occurrences','createdAt','updatedAt','revision','schemaVersion','completed','journeyProgress','processRecords','mode','expectedPackages']) && d.id == id && d.schemaVersion in [1,2] && d.step is int && d.step >= (transport ? 25 : 0) && d.step <= last && d.completed is bool && (!d.completed || d.step == last) && d.revision is int && d.revision > 0 && d.checks is map && d.checks.size() <= 100 && d.occurrences is list && d.occurrences.size() <= 100 && text(d.createdAt,40) && text(d.updatedAt,40) && d.input is map && (!('journeyProgress' in d) || numberRange(d.journeyProgress,0,1)) && (d.schemaVersion == 1 ? !('processRecords' in d) : (d.processRecords is map && d.processRecords.size() <= 40 && mode in ['complete','commercial','transport'] && (!transport || (d.expectedPackages is int && d.expectedPackages > 0 && d.expectedPackages <= 1000000 && 'routePlan' in d.input))));
+  }
+  function workflowUpdate() {
+   let old = resource.data;
+   let d = request.resource.data;
+   let key = string(old.step);
+   let reset = d.schemaVersion == 2 && d.step == firstStep(d) && d.checks.size() == 0 && d.occurrences.size() == 0 && d.processRecords.size() == 0 && !d.completed;
+   let rewind = d.schemaVersion == 2 && old.step < 25 && d.step in [5,9,14] && d.step < old.step && !d.completed && d.processRecords.diff(old.processRecords).addedKeys().size() == 0 && d.processRecords.diff(old.processRecords).changedKeys().size() == 0;
+   return d.schemaVersion == old.schemaVersion && d.get('mode','complete') == old.get('mode','complete') && d.get('expectedPackages',0) == old.get('expectedPackages',0) && (d.schemaVersion == 1 || reset || rewind || ((d.step == old.step || d.step == old.step + 1) && d.processRecords.diff(old.processRecords).affectedKeys().hasOnly([key]) && (!(key in d.processRecords) || processRecord(d.processRecords[key])) && ((d.step == old.step && !d.completed) || key in d.processRecords)));
+  }
+  function numberRange(v,low,high) { return v is number && v >= low && v <= high; }
+  function parameters(p) { return p.keys().hasOnly(['name', 'client', 'origin', 'destination', 'cargo', 'vehicle', 'driver', 'difficulty', 'route', 'freight', 'distance', 'speed', 'consumption', 'diesel', 'toll', 'driverHourly', 'maintenance', 'daily', 'food', 'miscellaneous', 'loading', 'unloading', 'pauseEvery', 'pauseDuration', 'shiftHours', 'restHours', 'deadline', 'routePlan']) && text(p.name,100) && text(p.client,100) && text(p.origin,100) && text(p.destination,100) && text(p.cargo,100) && text(p.vehicle,100) && text(p.driver,100) && p.difficulty in ['Iniciante','Intermediária','Avançada'] && p.route in ['curta','economica','rapida'] && numberRange(p.freight,0,1000000000000) && numberRange(p.distance,0.000001,10000) && numberRange(p.speed,1,80) && numberRange(p.consumption,0.000001,30) && numberRange(p.diesel,0.000001,100) && numberRange(p.toll,0,1000000000000) && numberRange(p.driverHourly,0,1000000000000) && numberRange(p.maintenance,0,1000000000000) && numberRange(p.daily,0,1000000000000) && numberRange(p.food,0,1000000000000) && numberRange(p.miscellaneous,0,1000000000000) && numberRange(p.loading,0,1000000000000) && numberRange(p.unloading,0,1000000000000) && numberRange(p.pauseEvery,0.25,1000000000000) && numberRange(p.pauseDuration,0,1000000000000) && numberRange(p.shiftHours,0.25,1000000000000) && numberRange(p.restHours,0,1000000000000) && numberRange(p.deadline,0.000001,1000000000000) && (!('routePlan' in p) || routePlan(p.routePlan)); }
 
-  function coordinate(p) { return p is map && p.keys().hasOnly(['lat','lng']) && p.lat is number && p.lng is number && p.lat >= -90 && p.lat <= 90 && p.lng >= -180 && p.lng <= 180; }
-  function routePlan(p) { return p is map && p.keys().hasOnly(['stops','geometry','legs','provider','calculatedAt']) && p.provider == 'OSRM' && text(p.calculatedAt,40) && p.stops is list && p.stops.size() >= 2 && p.stops.size() <= 8 && p.stops[0] is map && p.stops[p.stops.size()-1] is map && p.legs is list && p.legs.size() == p.stops.size()-1 && p.legs[0] is map && p.legs[p.legs.size()-1] is map && p.geometry is list && p.geometry.size() >= 2 && p.geometry.size() <= 2500 && coordinate(p.geometry[0]) && coordinate(p.geometry[p.geometry.size()-1]); }
+  function coordinate(p) {
+   let lat = p.lat;
+   let lng = p.lng;
+   return p is map && p.keys().hasOnly(['lat','lng']) && lat is number && lng is number && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+  }
+  function routePlan(p) {
+   let stops = p.stops;
+   let legs = p.legs;
+   let geometry = p.geometry;
+   return p is map && p.keys().hasOnly(['stops','geometry','legs','provider','calculatedAt']) && p.provider == 'OSRM' && text(p.calculatedAt,40) && stops is list && stops.size() >= 2 && stops.size() <= 8 && stops[0] is map && stops[stops.size()-1] is map && legs is list && legs.size() == stops.size()-1 && legs[0] is map && legs[legs.size()-1] is map && geometry is list && geometry.size() >= 2 && geometry.size() <= 2500 && coordinate(geometry[0]) && coordinate(geometry[geometry.size()-1]);
+  }
+  function inputUpdate(p, old) {
+   let changed = p.diff(old).affectedKeys();
+   return p.keys().hasAll(['name','client','origin','destination','cargo','vehicle','driver','difficulty','route','freight','distance','speed','consumption','diesel','toll','driverHourly','maintenance','daily','food','miscellaneous','loading','unloading','pauseEvery','pauseDuration','shiftHours','restHours','deadline']) && changed.hasOnly(['name','client','origin','destination','cargo','vehicle','driver','difficulty','route','freight','distance','speed','consumption','diesel','toll','driverHourly','maintenance','daily','food','miscellaneous','loading','unloading','pauseEvery','pauseDuration','shiftHours','restHours','deadline','routePlan'])
+    && (!changed.hasAny(['name','client','cargo','vehicle','driver']) || (text(p.name,100) && text(p.client,100) && text(p.cargo,100) && text(p.vehicle,100) && text(p.driver,100)))
+    && (!changed.hasAny(['origin','destination','distance']) || (text(p.origin,100) && text(p.destination,100) && p.distance is number && p.distance > 0 && p.distance <= 10000))
+    && (!changed.hasAny(['difficulty','route']) || (p.difficulty in ['Iniciante','Intermediária','Avançada'] && p.route in ['curta','economica','rapida']))
+    && (!changed.hasAny(['freight','toll','driverHourly','maintenance','daily','food','miscellaneous','loading','unloading']) || (nonnegative(p.freight) && nonnegative(p.toll) && nonnegative(p.driverHourly) && nonnegative(p.maintenance) && nonnegative(p.daily) && nonnegative(p.food) && nonnegative(p.miscellaneous) && nonnegative(p.loading) && nonnegative(p.unloading)))
+    && (!changed.hasAny(['speed','consumption','diesel','pauseEvery','pauseDuration','shiftHours','restHours','deadline']) || (p.speed is number && p.speed >= 1 && p.speed <= 80 && p.consumption is number && p.consumption > 0 && p.consumption <= 30 && p.diesel is number && p.diesel > 0 && p.diesel <= 100 && p.pauseEvery is number && p.pauseEvery >= 0.25 && nonnegative(p.pauseDuration) && p.shiftHours is number && p.shiftHours >= 0.25 && nonnegative(p.restHours) && p.deadline is number && p.deadline > 0))
+    && (!changed.hasAny(['routePlan']) || !('routePlan' in p) || routePlan(p.routePlan));
+  }
+  function nonnegative(v) { return v is number && v >= 0; }
+  function createMissionAllowed(uid,id) {
+   let d = request.resource.data;
+   return owner(uid) && subscribed(uid) && d.revision == 1 && d.step == firstStep(d) && !d.completed && mission(id) && (d.schemaVersion == 1 || d.processRecords.size() == 0) && parameters(d.input);
+  }
+  function updateMissionAllowed(uid,id) {
+   let d = request.resource.data;
+   let previous = resource.data;
+   return owner(uid) && subscribed(uid) && !previous.completed && d.revision == previous.revision + 1 && d.createdAt == previous.createdAt && mission(id) && workflowUpdate() && d.input.difficulty == previous.input.difficulty && (d.input == previous.input || (previous.step < departure(previous) && d.step == previous.step && inputUpdate(d.input,previous.input)));
+  }
   match /users/{uid} {
    allow read,delete: if owner(uid);
    allow create: if owner(uid) && profile();
    allow update: if owner(uid) && profile() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.email == resource.data.email;
    match /missions/{id} {
     allow read,delete: if owner(uid);
-    allow create: if owner(uid) && mission(id) && parameters(request.resource.data.input) && request.resource.data.revision == 1;
-    allow update: if owner(uid) && mission(id) && !resource.data.completed && request.resource.data.revision == resource.data.revision + 1 && request.resource.data.createdAt == resource.data.createdAt && (request.resource.data.input == resource.data.input || (resource.data.step < 8 && request.resource.data.step == resource.data.step && parameters(request.resource.data.input)));
+    allow create: if createMissionAllowed(uid,id);
+    allow update: if updateMissionAllowed(uid,id);
    }
    match /settings/{id} {
     allow read,delete: if owner(uid) && id == 'main';

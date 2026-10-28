@@ -5,7 +5,7 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
 function service() {
   if (!auth)
@@ -21,12 +21,18 @@ export async function register(name: string, email: string, password: string) {
     password,
   );
   await updateProfile(credential.user, { displayName: name });
-  if (db)
-    await setDoc(doc(db, "users", credential.user.uid), {
+  if (db) {
+    const batch = writeBatch(db);
+    batch.set(doc(db, "users", credential.user.uid), {
       name,
       email,
       createdAt: new Date().toISOString(),
     });
+    batch.set(doc(db, "trials", credential.user.uid), {
+      startedAt: serverTimestamp(),
+    });
+    await batch.commit();
+  }
 }
 export const login = (email: string, password: string) =>
   signInWithEmailAndPassword(service(), email, password);

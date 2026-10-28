@@ -1,11 +1,13 @@
+import { enterpriseWorkflow } from "../domain/workflow";
 import { useEffect } from "react";
 import { Info, X } from "lucide-react";
-import { stages } from "../domain/mission";
+import { legacyStages, stages } from "../domain/mission";
 import { stageGuidance } from "../domain/stageGuidance";
 export interface StageNoticeData {
   id: number;
   step: number;
   completed: boolean;
+  schemaVersion?: 1 | 2;
 }
 export function StageNotice({
   notice,
@@ -30,12 +32,16 @@ export function StageNotice({
       <Info size={21} />
       <div>
         <strong>
-          {notice.completed ? "Treinamento concluído" : stages[notice.step]}
+          {notice.completed
+            ? "Treinamento concluído"
+            : (notice.schemaVersion === 1 ? legacyStages : stages)[notice.step]}
         </strong>
         <p>
           {notice.completed
             ? "Seu resultado foi salvo. Consulte o relatório para revisar as decisões e os aprendizados."
-            : stageGuidance[notice.step][1]}
+            : notice.schemaVersion === 1
+              ? stageGuidance[notice.step][1]
+              : enterpriseWorkflow[notice.step].action}
         </p>
       </div>
       <button

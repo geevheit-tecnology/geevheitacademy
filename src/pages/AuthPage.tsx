@@ -1,7 +1,7 @@
 import { FooterCredit } from "../components/FooterCredit";
 import { ArrowRight, Truck } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../features/auth/AuthContext";
 import {
   errorMessage,
@@ -15,7 +15,13 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" }) {
   const [busy, setBusy] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  if (user && !busy) return <Navigate to="/app" />;
+  const location = useLocation();
+  const from = location.state?.from;
+  const destination =
+    typeof from === "string" && (from === "/admin" || from.startsWith("/app"))
+      ? from
+      : "/app";
+  if (user && !busy) return <Navigate to={destination} />;
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
@@ -32,7 +38,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" }) {
           "Se o e-mail estiver cadastrado, você receberá as instruções.",
         );
       } else await login(email, password);
-      if (mode !== "reset") navigate("/app");
+      if (mode !== "reset") navigate(destination);
     } catch (e) {
       setMessage(errorMessage(e));
     } finally {
@@ -51,7 +57,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" }) {
           Aprenda cada etapa do transporte em um ambiente seguro de treinamento.
         </p>
         <div className="story-stat">
-          <b>20</b>
+          <b>40</b>
           <span>
             etapas conectadas.
             <br />

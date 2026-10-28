@@ -4,7 +4,7 @@ Funcionários em formação precisam compreender as dependências e consequênci
 
 Público: operadores, novos funcionários e instrutores. Objetivos: compreender o ciclo, impedir liberações indevidas, calcular custos e explicar rentabilidade.
 
-Requisitos: autenticação Firebase, missões privadas, sincronização com controle de revisão, vinte etapas, ocorrências, três rotas, parâmetros editáveis, relatório e histórico, preferências e apresentação. Todos os números são educativos.
+Requisitos: autenticação Firebase, missões privadas, sincronização com controle de revisão, quarenta processos para novas missões (missões antigas mantêm as vinte etapas originais), ocorrências, três rotas, parâmetros editáveis, relatório e histórico, preferências e apresentação. Todos os números são educativos.
 
 Aceite: cálculos unitariamente verificados, transições bloqueadas por pendências, efeitos únicos por ocorrência, build TypeScript estrito, regras isolando UID e validação em projeto Firebase real. Sessões e retomada em outro dispositivo exigem ambiente externo configurado.
 

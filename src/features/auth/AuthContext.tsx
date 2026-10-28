@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { auth } from "../../services/firebase";
 const Context = createContext<{ user: User | null; loading: boolean }>({
   user: null,
@@ -33,11 +33,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export const useAuth = () => useContext(Context);
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
   return loading ? (
     <main className="center">Verificando sessão…</main>
   ) : user ? (
     <>{children}</>
   ) : (
-    <Navigate to="/login" replace />
+    <Navigate to="/login" state={{ from: location.pathname }} replace />
   );
 }

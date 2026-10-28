@@ -57,7 +57,7 @@ describe("trechos e movimento", () => {
     ).toEqual({ lat: 0, lng: 1.5 });
   });
   it("distribui a viagem pelas etapas sem chegar antecipadamente", () => {
-    let mission = createMission({ ...defaults, routePlan: plan });
+    let mission = createMission({ ...defaults, routePlan: plan }, 1);
     expect(() => travelNextLeg(mission)).toThrow("Transporte");
     mission = {
       ...mission,
@@ -69,7 +69,7 @@ describe("trechos e movimento", () => {
       travelNextLeg(addOccurrence(mission, "pane", "Pane impeditiva")),
     ).toThrow("impeditiva");
     for (const step of [8, 9, 10, 11]) {
-      const limit = stageTravelLimit(step);
+      const limit = stageTravelLimit(step, 1);
       while (missionProgress(mission) < limit - 1e-6) {
         const before = missionProgress(mission);
         mission = travelNextLeg(mission);
@@ -87,7 +87,7 @@ describe("trechos e movimento", () => {
   });
   it("não força missões antigas a 100% ao avançar e exige liberação mecânica", () => {
     let mission: Mission = {
-      ...createMission({ ...defaults, routePlan: plan }),
+      ...createMission({ ...defaults, routePlan: plan }, 1),
       step: 9,
       journeyProgress: 1,
       checks: { "9:0": true },

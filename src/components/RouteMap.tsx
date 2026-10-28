@@ -23,9 +23,11 @@ function textPopup(title: string, detail: string) {
 export function RouteMap({
   progress = 0,
   input,
+  preview,
 }: {
   progress?: number;
   input?: MissionInput;
+  preview?: Pick<RoutePlan, "geometry" | "stops" | "legs">;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
@@ -34,9 +36,9 @@ export function RouteMap({
   const previousProgress = useRef(progress);
   const [sample, setSample] = useState<RoutePlan>();
   const [error, setError] = useState("");
-  const plan = input?.routePlan ?? (!input ? sample : undefined);
+  const plan = input?.routePlan ?? preview ?? (!input ? sample : undefined);
   useEffect(() => {
-    if (input) return;
+    if (input || preview) return;
     let active = true;
     calculateRoadRoute(sampleStops, "economica")
       .then((p) => {
@@ -49,7 +51,7 @@ export function RouteMap({
     return () => {
       active = false;
     };
-  }, [input]);
+  }, [input, preview]);
   useEffect(() => {
     if (!host.current) return;
     const instance = L.map(host.current, {
@@ -155,7 +157,9 @@ export function RouteMap({
       "(prefers-reduced-motion: reduce)",
     ).matches;
     function move(now: number) {
-      const t = reduced ? 1 : Math.min(1, (now - started) / 1800);
+      const t = reduced
+        ? 1
+        : Math.min(1, (now - started) / (preview ? 500 : 1800));
       const shown = start + (end - start) * (t * t * (3 - 2 * t));
       previousProgress.current = shown;
       const p = pointOnRoute(plan!.geometry, shown);
@@ -164,7 +168,7 @@ export function RouteMap({
     }
     frame = requestAnimationFrame(move);
     return () => cancelAnimationFrame(frame);
-  }, [progress, plan]);
+  }, [progress, plan, preview]);
   return (
     <div className="route-map live-route-map">
       <div className="live-map-header">

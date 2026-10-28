@@ -1,3 +1,4 @@
+import { useBilling } from "../services/billing";
 import { FooterCredit } from "../components/FooterCredit";
 import {
   HelpCircle,
@@ -20,6 +21,7 @@ import type { WorkspaceContext } from "./workspace/shared";
 export function Workspace() {
   const missionRepository = useMissionRepository();
   const { user } = useAuth();
+  const { admin } = useBilling();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [message, setMessage] = useState("");
   const [presentation, setPresentation] = useState(false);
@@ -58,6 +60,11 @@ export function Workspace() {
               icon: Settings,
               label: "Configurações",
             },
+            {
+              to: "/app/assinatura",
+              icon: UserRound,
+              label: "Minha assinatura",
+            },
             { to: "/app/perfil", icon: UserRound, label: "Meu perfil" },
           ].map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end}>
@@ -67,6 +74,8 @@ export function Workspace() {
           ))}
         </nav>
         <div className="sidebar-bottom">
+          {admin && <Link to="/admin">Administração</Link>}
+          <Link to="/manual">Manual de treinamento</Link>
           <Link to="/ajuda">
             <HelpCircle size={19} /> Central de ajuda
           </Link>

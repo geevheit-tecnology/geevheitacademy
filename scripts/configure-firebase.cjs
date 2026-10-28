@@ -27,7 +27,32 @@ async function main() {
       throw Error(`${r.status}: ${d.error?.message || "Requisição rejeitada"}`);
     return d;
   }
-  if (process.argv[2] === "enable") {
+  if (process.argv[2] === "grant-admin") {
+    const email = process.argv[3];
+    if (email !== "getuliopedromoreirafilho@gmail.com")
+      throw Error("A administração é exclusiva da conta do proprietário.");
+    const result = await request(
+      `https://identitytoolkit.googleapis.com/v1/projects/${project}/accounts:lookup`,
+      "POST",
+      { email: [email] },
+    );
+    const user = result.users?.find(
+      (user) => user.email?.toLowerCase() === email.toLowerCase(),
+    );
+    if (!user)
+      throw Error(
+        "Conta não encontrada. Crie a conta na plataforma antes de conceder acesso.",
+      );
+    if (user.disabled) throw Error("A conta está desativada.");
+    const target = `https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/admins/${encodeURIComponent(user.localId)}`;
+    await request(target, "PATCH", {
+      fields: { granted: { booleanValue: true } },
+    });
+    const saved = await request(target);
+    if (!saved.fields?.granted?.booleanValue)
+      throw Error("Permissão não confirmada.");
+    console.log(JSON.stringify({ project, email, adminGranted: true }));
+  } else if (process.argv[2] === "enable") {
     for (const service of [
       "firestore.googleapis.com",
       "identitytoolkit.googleapis.com",

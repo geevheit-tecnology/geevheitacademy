@@ -1,3 +1,4 @@
+import { currency, useBilling } from "../services/billing";
 import { FooterCredit } from "../components/FooterCredit";
 import {
   ArrowRight,
@@ -9,8 +10,9 @@ import {
   Truck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { RouteMap } from "../components/RouteMap";
+import { AnimatedRoutePreview } from "../components/AnimatedRoutePreview";
 export function Landing() {
+  const { config, loading, error, admin } = useBilling();
   return (
     <>
       <header className="public-header">
@@ -23,7 +25,8 @@ export function Landing() {
         <nav>
           <a href="#metodo">Como funciona</a>
           <a href="#aprendizado">O que você aprende</a>
-          <Link to="/ajuda">Central de ajuda</Link>
+          <a href="#assinatura">Planos</a>
+          <Link to="/manual">Manual de treinamento</Link>
         </nav>
         <Link className="small-button" to="/login">
           Acessar plataforma <ArrowRight size={16} />
@@ -43,12 +46,13 @@ export function Landing() {
               <em>move o resultado.</em>
             </h1>
             <p>
-              Do primeiro contato comercial ao fechamento financeiro: viva uma
-              operação de transporte completa, antes de assumir uma de verdade.
+              Da captação do cliente à negociação, frota, entrega e recebimento:
+              viva uma operação de transporte completa, antes de assumir uma de
+              verdade.
             </p>
             <div className="actions">
               <Link className="primary" to="/cadastro">
-                Começar meu treinamento <ArrowRight size={18} />
+                Testar grátis por 3 dias <ArrowRight size={18} />
               </Link>
               <a className="text-link" href="#metodo">
                 Conhecer o simulador <MoveUpRight size={17} />
@@ -59,7 +63,7 @@ export function Landing() {
                 <ShieldCheck size={18} /> Ambiente seguro para aprender
               </span>
               <span>
-                <Check size={18} /> Sem operação real
+                <Check size={18} /> Sem cartão e sem cobrança automática
               </span>
             </div>
           </div>
@@ -82,7 +86,7 @@ export function Landing() {
                 <Truck />
               </span>
             </div>
-            <RouteMap progress={0.45} />
+            <AnimatedRoutePreview />
             <div className="visual-metrics">
               <div>
                 <small>Distância planejada</small>
@@ -93,7 +97,7 @@ export function Landing() {
               <div>
                 <small>Etapas da operação</small>
                 <strong>
-                  20 <span>etapas</span>
+                  40 <span>etapas</span>
                 </strong>
               </div>
               <div>
@@ -187,10 +191,12 @@ export function Landing() {
           </div>
           <div className="learning-list">
             {[
-              "Negociação e planejamento de frete",
+              "Captação, cadastro e análise do cliente",
+              "Custos, proposta, negociação e contrato",
+              "Dimensionamento da frota e programação",
               "Documentação e liberação operacional",
               "Jornada, custos e tratamento de ocorrências",
-              "Aceite, comprovante e fechamento financeiro",
+              "Aceite, comprovante, faturamento e recebimento",
             ].map((s, i) => (
               <div key={s}>
                 <span>0{i + 1}</span>
@@ -200,6 +206,102 @@ export function Landing() {
             ))}
           </div>
         </section>
+        <section className="section training-benefits" id="treine-sua-equipe">
+          <span className="eyebrow">
+            TREINAMENTO PARA A ROTINA DA SUA EMPRESA
+          </span>
+          <h2>Pratique antes de colocar a operação em risco.</h2>
+          <p>
+            Treine decisões comerciais e operacionais em um cenário seguro. A
+            equipe entende como uma negociação influencia a margem, como um
+            atraso afeta a entrega e como registrar a solução.
+          </p>
+          <div className="feature-grid">
+            {[
+              [
+                "Escolha o foco",
+                "12 processos comerciais, 10 de transporte ou o ciclo completo com 40.",
+              ],
+              [
+                "Aumente a dificuldade",
+                "Comece pelo fluxo guiado e evolua para desafios de documentos, custos, pane e comprovante.",
+              ],
+              [
+                "Transforme o resultado em ação",
+                "Use os registros e o relatório para discutir decisões, alinhar procedimentos e repetir o treino.",
+              ],
+            ].map(([title, text]) => (
+              <article className="feature-card" key={title}>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </article>
+            ))}
+          </div>
+          <Link className="text-link" to="/manual">
+            Ler o manual e preparar minha equipe <ArrowRight size={17} />
+          </Link>
+        </section>
+        <section className="section commercial-offer" id="assinatura">
+          <div>
+            <span className="eyebrow">COMECE COM 3 DIAS GRÁTIS</span>
+            <h2>
+              {!loading && !error && config.enabled
+                ? config.name
+                : "Sua equipe pronta para a próxima operação."}
+            </h2>
+            <p>
+              Explore os três modos de treinamento. Sem cartão, sem cobrança
+              automática e com cancelamento a qualquer momento.
+            </p>
+            <ul>
+              <li>Comercial, transporte ou operação completa</li>
+              <li>Três níveis com desafios progressivos</li>
+              <li>Negociação simulada, mapa, registros e relatório</li>
+            </ul>
+            <Link className="primary" to="/cadastro">
+              Criar conta e testar por 3 dias <ArrowRight size={18} />
+            </Link>
+          </div>
+          <div className="commercial-price">
+            <span>Após o período gratuito</span>
+            {!loading && !error && config.enabled ? (
+              <>
+                <strong>{currency(config.priceCents)}</strong>
+                <span>por {config.days} dias de acesso</span>
+                <p>
+                  Pagamento por Pix, liberado após conferência. Renove somente
+                  quando quiser continuar.
+                </p>
+                <Link className="secondary" to="/app/assinatura">
+                  Ver minha assinatura
+                </Link>
+              </>
+            ) : (
+              <>
+                <strong>Valores em definição</strong>
+                <p>
+                  Os valores serão disponibilizados pelo administrador antes de
+                  qualquer contratação. Você não será cobrado ao criar a conta.
+                </p>
+              </>
+            )}
+            <small>
+              Cancele pelo seu perfil de assinatura. O acesso vigente permanece
+              até o vencimento.
+            </small>
+          </div>
+        </section>
+        <section className="section platform-evolution">
+          <span className="eyebrow">UMA PLATAFORMA EM EVOLUÇÃO</span>
+          <h2>Cada vez mais perto da rotina de uma transportadora.</h2>
+          <p>
+            Hoje você treina o ciclo de uma ordem de transporte. A visão de
+            evolução inclui cenários mais detalhados, operações simultâneas e
+            novos exercícios para aproximar a aprendizagem da rotina da sua
+            empresa. Recursos futuros serão apresentados conforme forem
+            disponibilizados.
+          </p>
+        </section>
       </main>
       <footer>
         <Link className="brand" to="/">
@@ -207,6 +309,8 @@ export function Landing() {
           TransportSim <b>360</b>
         </Link>
         <p>Preparando pessoas. Movendo conhecimento.</p>
+        <Link to="/app/assinatura">Assinatura e Pix</Link>
+        {admin && <Link to="/admin">Administração</Link>}
         <a href="#">Voltar ao topo ↑</a>
         <small>
           Simulação educacional. Não representa rastreamento, emissão fiscal ou

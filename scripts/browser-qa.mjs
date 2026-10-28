@@ -116,12 +116,50 @@ try {
     page.getByText("Resolvida • hora simulada", { exact: false }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Operação", exact: true }).click();
-  for (let step = 1; step <= 20; step++) {
+  for (let step = 1; step <= 40; step++) {
     await expect(
-      page.getByText(`ETAPA ${step} DE 20`, { exact: true }),
+      page.getByText(`ETAPA ${step} DE 40`, { exact: true }),
     ).toBeVisible({ timeout: 20000 });
     await expect(page.locator(".stage-guide")).toContainText(
       "O que fazer agora",
+    );
+    if (step === 10)
+      await page.getByRole("button", { name: "Fechar negociação" }).click();
+    const record = page.locator(".process-record");
+    const numbers = {
+      "Peso da carga em toneladas": "12",
+      "Capacidade útil em toneladas": "14",
+      "Diesel em R$/litro": "6.1",
+      "Pedágios previstos em R$": "90",
+      "Reserva de manutenção em R$": "120",
+      "Preço proposto em R$": "5200",
+      "Frete final negociado em R$": "5200",
+      "Margem mínima desejada em %": "10",
+      "Limite de crédito aprovado em R$": "10000",
+      "Horas de direção por jornada planejada": "8",
+      "Prazo contratado em horas": "24",
+      "Volumes conferidos": "100",
+      "Volumes recebidos": "100",
+      "Valor recebido de treinamento em R$": "5200",
+    };
+    const fields = record.locator("input");
+    for (let i = 0; i < (await fields.count()); i++) {
+      const input = fields.nth(i);
+      const label = (await input.locator("..").innerText()).trim();
+      await input.fill(
+        (await input.getAttribute("type")) === "number"
+          ? (numbers[label] ?? "1")
+          : `Registro de treinamento ${step}`,
+      );
+    }
+    const choices = record.locator("select");
+    for (let i = 0; i < (await choices.count()); i++)
+      await choices.nth(i).selectOption({ index: 1 });
+    await record
+      .getByRole("button", { name: "Salvar registro da etapa" })
+      .click();
+    await expect(record.getByRole("status")).toHaveText(
+      "Registro salvo na missão.",
     );
     const checks = page.locator(".check-row input");
     const count = await checks.count();
@@ -132,7 +170,7 @@ try {
         page.getByText("Sincronizado com a nuvem", { exact: true }),
       ).toBeVisible({ timeout: 20000 });
     }
-    if (step >= 9 && step <= 12) {
+    if (step >= 26 && step <= 29) {
       const move = page.getByRole("button", {
         name: "Avançar na viagem",
         exact: true,
@@ -158,13 +196,13 @@ try {
       await expect(
         page.getByRole("button", {
           name:
-            step === 12
+            step === 29
               ? "Chegada ao destino registrada"
               : "Percurso desta etapa concluído",
           exact: true,
         }),
       ).toBeVisible();
-      if (step === 9 || step === 12)
+      if (step === 26 || step === 29)
         await page.screenshot({
           path: `docs/qa/travel-stage-${step}.png`,
           fullPage: true,
@@ -172,7 +210,7 @@ try {
     }
     await page
       .getByRole("button", {
-        name: step === 20 ? "Concluir treinamento" : "Concluir etapa e avançar",
+        name: step === 40 ? "Concluir treinamento" : "Concluir etapa e avançar",
         exact: true,
       })
       .click();
@@ -256,7 +294,7 @@ try {
   if (errors.length) throw Error(errors.join("\n"));
   console.log(
     `${emulators ? "EMULADORES" : "FIREBASE REAL"}: ` +
-      "PASS: desktop/celular sem overflow; cadastro real; sessão após reload; ocorrência e resolução; 20 etapas; relatório; histórico e recuperação em segundo contexto; logout; zero erros JavaScript.",
+      "PASS: desktop/celular sem overflow; cadastro real; sessão após reload; ocorrência e resolução; 40 processos; relatório; histórico e recuperação em segundo contexto; logout; zero erros JavaScript.",
   );
 } catch (error) {
   await page.screenshot({ path: "docs/qa/map-qa-failure.png", fullPage: true });

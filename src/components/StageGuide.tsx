@@ -1,18 +1,30 @@
+import { enterpriseWorkflow } from "../domain/workflow";
 import { BookOpen, Target, Lightbulb, CheckCircle2 } from "lucide-react";
 import { stageGuidance } from "../domain/stageGuidance";
-import { stages } from "../domain/mission";
+import { legacyStages, stages } from "../domain/mission";
 export function StageGuide({
   step,
+  schemaVersion = 2,
+  position = step,
+  total,
   completed,
   lastCompleted,
   onExplain,
 }: {
   step: number;
+  schemaVersion?: 1 | 2;
+  position?: number;
+  total?: number;
   completed: boolean;
   lastCompleted: string;
   onExplain: () => void;
 }) {
-  const [title, action, impact] = stageGuidance[step];
+  const flow = schemaVersion === 1 ? legacyStages : stages;
+  const record = enterpriseWorkflow[step];
+  const [title, action, impact] =
+    schemaVersion === 1
+      ? stageGuidance[step]
+      : [record.name, record.action, record.impact];
   return (
     <section className="stage-guide" key={step} aria-live="polite">
       {lastCompleted && (
@@ -22,7 +34,8 @@ export function StageGuide({
         </div>
       )}
       <span className="eyebrow">
-        <BookOpen size={15} /> PASSO {step + 1} / 20 • {stages[step]}
+        <BookOpen size={15} /> PASSO {position + 1} / {total ?? flow.length} •{" "}
+        {flow[step]}
       </span>
       <h2>{completed ? "Treinamento concluído" : title}</h2>
       <button

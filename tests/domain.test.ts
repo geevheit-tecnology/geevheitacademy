@@ -4,7 +4,7 @@ import {
   calculate,
   createMission,
   advance,
-  requirements,
+  legacyRequirements as requirements,
   addOccurrence,
   resolveOccurrence,
   score,
@@ -68,9 +68,9 @@ describe("motor logístico", () => {
 });
 describe("máquina de estados e consequências", () => {
   it("bloqueia avanço sem checklist", () =>
-    expect(() => advance(createMission(defaults))).toThrow("checklist"));
+    expect(() => advance(createMission(defaults, 1))).toThrow("checklist"));
   it("bloqueia pane e mantém custos uma única vez após resolução repetida", () => {
-    let m = createMission(defaults);
+    let m = createMission(defaults, 1);
     m = { ...m, checks: { "0:0": true } };
     m = addOccurrence(m, "pane", "Falha no motor");
     expect(() => advance(m)).toThrow("impeditivas");
@@ -81,7 +81,7 @@ describe("máquina de estados e consequências", () => {
     expect(advance(m).step).toBe(1);
   });
   it("conclui todas as etapas e impede alteração da missão final", () => {
-    let m = createMission(defaults);
+    let m = createMission(defaults, 1);
     for (let step = 0; step < 20; step++) {
       expect(m.step).toBe(step);
       m = {
@@ -101,7 +101,7 @@ describe("máquina de estados e consequências", () => {
     expect(() => addOccurrence(m, "pane", "Falha tardia")).toThrow();
   });
   it("pontuação explica os descontos e respeita limite inferior", () => {
-    let m = createMission({ ...defaults, freight: 0, deadline: 1 });
+    let m = createMission({ ...defaults, freight: 0, deadline: 1 }, 1);
     for (let i = 0; i < 20; i++) m = addOccurrence(m, "pane", "Falha de teste");
     const s = score(m);
     expect(s.value).toBe(0);
