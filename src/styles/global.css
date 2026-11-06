@@ -2361,6 +2361,17 @@ footer .developer-credit {
   margin: 0;
   font-size: 11px;
 }
+.developer-credit a,
+.credit-link {
+  color: #27634b;
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+.developer-credit a:hover,
+.credit-link:hover {
+  color: #173d31;
+}
 .app-footer {
   padding: 12px 24px;
   border-top: 1px solid var(--line);

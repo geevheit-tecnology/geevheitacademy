@@ -48,6 +48,13 @@ export function Landing() {
           <a href="#aprendizado">O que você aprende</a>
           <a href="#assinatura">Planos</a>
           <Link to="/manual">Manual de treinamento</Link>
+          <a
+            href="https://geevheith-site.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Contato
+          </a>
         </nav>
         <Link className="small-button" to={admin ? "/admin" : "/login"}>
           {admin ? "Painel do Administrador" : "Acessar plataforma"}{" "}
@@ -332,6 +339,14 @@ export function Landing() {
         </Link>
         <p>Preparando pessoas. Movendo conhecimento.</p>
         <Link to="/app/assinatura">Assinatura e Pix</Link>
+        <a
+          href="https://geevheith-site.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
+        >
+          Fale Conosco / Contato <MoveUpRight size={13} />
+        </a>
         {admin && <Link to="/admin">Administração</Link>}
         <a href="#">Voltar ao topo ↑</a>
         <small>
