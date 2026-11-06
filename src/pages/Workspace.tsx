@@ -8,6 +8,7 @@ import {
   Monitor,
   Plus,
   Settings,
+  ShieldCheck,
   Truck,
   UserRound,
 } from "lucide-react";
@@ -47,6 +48,15 @@ export function Workspace() {
         <small>SEU AMBIENTE DE APRENDIZADO</small>
         <nav>
           {[
+            ...(admin
+              ? [
+                  {
+                    to: "/admin",
+                    icon: ShieldCheck,
+                    label: "Painel do Admin",
+                  },
+                ]
+              : []),
             {
               to: "/app",
               icon: LayoutDashboard,
@@ -74,7 +84,20 @@ export function Workspace() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          {admin && <Link to="/admin">Administração</Link>}
+          {admin && (
+            <Link
+              to="/admin"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontWeight: 600,
+                color: "var(--accent, #60a5fa)",
+              }}
+            >
+              <ShieldCheck size={19} /> Administração
+            </Link>
+          )}
           <Link to="/manual">Manual de treinamento</Link>
           <Link to="/ajuda">
             <HelpCircle size={19} /> Central de ajuda

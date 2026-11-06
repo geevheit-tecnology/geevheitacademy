@@ -1,4 +1,4 @@
-import { administratorEmail } from "../domain/adminAccess";
+import { isAdminEmail } from "../domain/adminAccess";
 import { FooterCredit } from "../components/FooterCredit";
 import { ArrowRight, Truck } from "lucide-react";
 import { useState, type FormEvent } from "react";
@@ -19,10 +19,12 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" }) {
   const location = useLocation();
   const from = location.state?.from;
   const destination =
-    typeof from === "string" && (from === "/admin" || from.startsWith("/app"))
-      ? from
-      : user?.email === administratorEmail
-        ? "/admin"
+    isAdminEmail(user?.email)
+      ? typeof from === "string" && from.startsWith("/app/")
+        ? from
+        : "/admin"
+      : typeof from === "string" && from.startsWith("/app")
+        ? from
         : "/app";
   if (user && !busy) return <Navigate to={destination} />;
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -43,11 +45,12 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" }) {
       } else await login(email, password);
       if (mode !== "reset")
         navigate(
-          typeof from === "string" &&
-            (from === "/admin" || from.startsWith("/app"))
-            ? from
-            : email.trim().toLowerCase() === administratorEmail
-              ? "/admin"
+          isAdminEmail(email)
+            ? typeof from === "string" && from.startsWith("/app/")
+              ? from
+              : "/admin"
+            : typeof from === "string" && from.startsWith("/app")
+              ? from
               : "/app",
         );
     } catch (e) {

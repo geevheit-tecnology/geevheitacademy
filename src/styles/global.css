@@ -2933,3 +2933,209 @@ footer .developer-credit {
   align-items: center;
   gap: 10px;
 }
+
+/* -------------------------------------------------- */
+/* Checkout Pix com QR Code e Status em Tempo Real     */
+/* -------------------------------------------------- */
+.pix-checkout-box {
+  margin-block: 20px;
+  padding: 24px;
+  background: #fbfdf9;
+  border: 1px solid #dce5d4;
+  border-radius: 14px;
+}
+.pix-qr-section {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.pix-qr-wrapper {
+  background: white;
+  border: 2px solid #153d31;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(18, 61, 48, 0.08);
+  flex-shrink: 0;
+}
+.pix-qr-svg {
+  width: 190px;
+  height: 190px;
+  display: block;
+}
+.pix-qr-caption {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2b5545;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pix-details-section {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pix-amount-badge {
+  display: flex;
+  flex-direction: column;
+  background: #eef5e6;
+  border-left: 4px solid #2b5545;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+}
+.pix-amount-badge small {
+  font-size: 11px;
+  color: #61735d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pix-amount-badge strong {
+  font-size: 24px;
+  color: #123d30;
+}
+.pix-meta-list {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  margin: 0;
+}
+.pix-meta-list dt {
+  color: #6e7e69;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.pix-meta-list dd {
+  margin: 2px 0 6px;
+  font-weight: 600;
+}
+.pix-key-val {
+  font-family: monospace;
+  font-size: 12px;
+  background: #f0f4ea;
+  padding: 4px 8px;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.pix-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pix-copy-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  font-weight: 600;
+}
+.pix-copy-key-button {
+  background: none;
+  border: 1px solid #c8d4c1;
+  color: #2b5545;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.pix-copy-key-button:hover {
+  background: #f0f4ea;
+}
+.pix-instruction-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed #dce5d4;
+}
+.pix-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4b5d49;
+}
+.pix-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #123d30;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.pix-live-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+.pix-live-status.pending {
+  background: #fefce8;
+  border: 1px solid #fde047;
+  color: #713f12;
+}
+.pix-live-status.active {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.pix-live-status h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+.pix-live-status p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.pulse-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ca8a04;
+  box-shadow: 0 0 0 0 rgba(202, 138, 4, 0.7);
+  animation: pulse-ring 1.8s infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(202, 138, 4, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(202, 138, 4, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(202, 138, 4, 0);
+  }
+}
+@media (max-width: 650px) {
+  .pix-instruction-steps {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .pix-qr-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pix-qr-wrapper {
+    align-self: center;
+  }
+}

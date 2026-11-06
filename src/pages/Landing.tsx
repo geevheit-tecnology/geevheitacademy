@@ -28,8 +28,9 @@ export function Landing() {
           <a href="#assinatura">Planos</a>
           <Link to="/manual">Manual de treinamento</Link>
         </nav>
-        <Link className="small-button" to="/login">
-          Acessar plataforma <ArrowRight size={16} />
+        <Link className="small-button" to={admin ? "/admin" : "/login"}>
+          {admin ? "Painel do Administrador" : "Acessar plataforma"}{" "}
+          <ArrowRight size={16} />
         </Link>
       </header>
       <main>

@@ -1,4 +1,4 @@
-import { administratorEmail } from "../domain/adminAccess";
+import { administratorEmail, isAdminEmail } from "../domain/adminAccess";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "./firebase";
@@ -106,7 +106,7 @@ export function useBilling() {
           doc(db, "admins", user.uid),
           (snap) => {
             setAdmin(
-              user.email === administratorEmail &&
+              isAdminEmail(user.email) &&
                 snap.exists() &&
                 snap.data().granted === true,
             );

@@ -14,6 +14,9 @@ import {
 import { useAuth } from "../../features/auth/AuthContext";
 import { currency, useBilling } from "../../services/billing";
 import { db } from "../../services/firebase";
+import { PixQrCode } from "../../components/PixQrCode";
+import { Link } from "react-router-dom";
+import { CheckCircle2, Clock, ArrowRight } from "lucide-react";
 export function Subscription() {
   const { user } = useAuth();
   const {
@@ -188,30 +191,43 @@ export function Subscription() {
             </strong>
             <p>
               Renovação por Pix a cada período. O acesso é liberado após
-              conferência manual do recebimento.
+              conferência do recebimento.
             </p>
-            <dl>
-              <dt>Favorecido</dt>
-              <dd>{config.recipient}</dd>
-              <dt>Chave Pix</dt>
-              <dd className="pix-key">{config.pixKey}</dd>
-            </dl>
-            <button
-              className="small-button"
-              onClick={() => {
-                void navigator.clipboard.writeText(config.pixKey).then(
-                  () => setMessage("Chave copiada."),
-                  () => setMessage("Copie a chave Pix exibida acima."),
-                );
-              }}
-            >
-              Copiar chave Pix
-            </button>
-            <p>
-              Confira o favorecido no aplicativo do seu banco e pague o valor
-              indicado. Depois, informe o pagamento abaixo. A solicitação não
-              confirma o recebimento.
-            </p>
+
+            {pending ? (
+              <div className="pix-live-status pending">
+                <div className="pulse-indicator" />
+                <div>
+                  <h3>Pagamento em conferência — aguardando liberação</h3>
+                  <p>
+                    <strong>Você não precisa sair desta página nem recarregar.</strong> Assim que o administrador
+                    confirmar o Pix, o seu acesso será liberado automaticamente aqui em tempo real.
+                  </p>
+                </div>
+              </div>
+            ) : expiresAt > now ? (
+              <div className="pix-live-status active">
+                <CheckCircle2 size={28} />
+                <div>
+                  <h3>Assinatura ativa e liberada!</h3>
+                  <p>
+                    Seu acesso está válido até {new Date(expiresAt).toLocaleString("pt-BR")}.
+                  </p>
+                </div>
+                <Link to="/app/nova" className="primary small-button">
+                  Nova missão <ArrowRight size={16} />
+                </Link>
+              </div>
+            ) : null}
+
+            <PixQrCode
+              pixKey={config.pixKey}
+              recipient={config.recipient}
+              priceCents={config.priceCents}
+              planName={config.name}
+              onCopied={setMessage}
+            />
+
             <form
               className="billing-form"
               onSubmit={(e) => {
@@ -219,6 +235,11 @@ export function Subscription() {
                 void request();
               }}
             >
+              <h3>Confirmar pagamento</h3>
+              <p>
+                Após efetuar o Pix no app do seu banco, confirme os dados abaixo
+                para localizar a transferência:
+              </p>
               <label>
                 Nome de quem fez o Pix
                 <input
@@ -238,11 +259,15 @@ export function Subscription() {
                 />
               </label>
               <button className="primary" disabled={busy || pending || !!error}>
-                {pending
-                  ? "Pagamento aguardando conferência"
-                  : busy
-                    ? "Enviando…"
-                    : "Já paguei — solicitar conferência"}
+                {pending ? (
+                  <>
+                    <Clock size={16} /> Pagamento aguardando conferência
+                  </>
+                ) : busy ? (
+                  "Enviando…"
+                ) : (
+                  "Já paguei — solicitar conferência"
+                )}
               </button>
             </form>
           </>
