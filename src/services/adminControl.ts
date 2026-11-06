@@ -163,3 +163,77 @@ export async function changeStudentAccess(
   );
   await batch.commit();
 }
+
+export async function editStudentProfile(
+  actorUid: string,
+  student: StudentAccount,
+  data: { name: string; email?: string },
+) {
+  const cleanName = data.name.trim();
+  if (cleanName.length < 2 || cleanName.length > 100) {
+    throw Error("O nome do aluno deve ter entre 2 e 100 caracteres.");
+  }
+  const cleanEmail = (
+    data.email ? data.email.trim().toLowerCase() : student.email.trim().toLowerCase()
+  );
+  if (!cleanEmail || !cleanEmail.includes("@") || cleanEmail.length > 254) {
+    throw Error("Informe um e-mail válido com até 254 caracteres.");
+  }
+
+  const store = database();
+  const batch = writeBatch(store);
+  const userRef = doc(store, "users", student.uid);
+
+  batch.update(userRef, {
+    name: cleanName,
+    email: cleanEmail,
+  });
+
+  batch.set(
+    auditDocument(),
+    auditEntry(
+      actorUid,
+      "student.edit",
+      student.uid,
+      `Nome: ${cleanName} · E-mail: ${cleanEmail}`,
+    ),
+  );
+
+  await batch.commit();
+}
+
+export async function deleteStudent(
+  actorUid: string,
+  student: StudentAccount,
+  reason: string,
+) {
+  if (actorUid === student.uid) {
+    throw Error("A conta do administrador geral não pode ser excluída.");
+  }
+  const cleanReason = reason.trim();
+  if (cleanReason.length < 5 || cleanReason.length > 300) {
+    throw Error("Informe o motivo da exclusão com 5 a 300 caracteres.");
+  }
+
+  const store = database();
+  const batch = writeBatch(store);
+
+  batch.delete(doc(store, "users", student.uid));
+  batch.delete(doc(store, "userAccess", student.uid));
+  batch.delete(doc(store, "subscriptions", student.uid));
+  batch.delete(doc(store, "subscriptionPreferences", student.uid));
+  batch.delete(doc(store, "trials", student.uid));
+
+  batch.set(
+    auditDocument(),
+    auditEntry(
+      actorUid,
+      "student.delete",
+      student.uid,
+      `Exclusão do aluno: ${student.name} (${student.email}) · Motivo: ${cleanReason}`,
+    ),
+  );
+
+  await batch.commit();
+}
+

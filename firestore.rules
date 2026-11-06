@@ -11,7 +11,7 @@ service cloud.firestore {
   match /userAccess/{uid} {
    allow read: if owner(uid) || admin();
    allow create,update: if admin() && uid != request.auth.uid && request.resource.data.keys().hasOnly(['blocked','manualExpiresAt','reason','updatedBy','updatedAt']) && request.resource.data.blocked is bool && request.resource.data.manualExpiresAt is timestamp && request.resource.data.manualExpiresAt >= timestamp.date(1970,1,1) && request.resource.data.manualExpiresAt <= request.time + duration.value(367,'d') && text(request.resource.data.reason,300) && request.resource.data.updatedBy == request.auth.uid && request.resource.data.updatedAt == request.time;
-   allow delete: if false;
+   allow delete: if admin();
   }
   match /platform/config {
    allow read: if true;
@@ -25,12 +25,13 @@ service cloud.firestore {
   match /trials/{uid} {
    allow read: if owner(uid) || admin();
    allow create: if owner(uid) && request.resource.data.keys().hasOnly(['startedAt']) && request.resource.data.startedAt == request.time;
-   allow update,delete: if false;
+   allow update: if false;
+   allow delete: if admin();
   }
   match /subscriptionPreferences/{uid} {
    allow read: if owner(uid) || admin();
    allow create,update: if owner(uid) && request.resource.data.keys().hasOnly(['canceled','updatedAt']) && request.resource.data.canceled is bool && request.resource.data.updatedAt == request.time;
-   allow delete: if false;
+   allow delete: if admin();
   }
   match /admins/{uid} { allow get: if owner(uid); allow list,write: if false; }
   match /billing/config {
@@ -40,6 +41,7 @@ service cloud.firestore {
   match /subscriptions/{uid} {
    allow read: if owner(uid) || admin();
    allow create,update: if admin() && request.resource.data.keys().hasOnly(['expiresAt','paymentId','updatedAt']) && request.resource.data.expiresAt is timestamp && request.resource.data.updatedAt == request.time && getAfter(/databases/$(database)/documents/paymentRequests/$(request.resource.data.paymentId)).data.status == 'approved' && getAfter(/databases/$(database)/documents/paymentRequests/$(request.resource.data.paymentId)).data.uid == uid;
+   allow delete: if admin();
   }
   match /paymentRequests/{id} {
    allow read: if request.auth != null && (resource.data.uid == request.auth.uid || admin());
@@ -109,24 +111,24 @@ service cloud.firestore {
   }
   match /users/{uid} {
    allow read: if owner(uid) || admin();
-   allow delete: if owner(uid);
+   allow delete: if owner(uid) || admin();
    allow create: if owner(uid) && profile();
-   allow update: if owner(uid) && profile() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.email == resource.data.email;
+   allow update: if (owner(uid) && profile() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.email == resource.data.email) || (admin() && profile() && request.resource.data.createdAt == resource.data.createdAt);
    match /missions/{id} {
-    allow read,delete: if owner(uid);
+    allow read,delete: if owner(uid) || admin();
     allow create: if createMissionAllowed(uid,id);
     allow update: if updateMissionAllowed(uid,id);
    }
    match /settings/{id} {
-    allow read,delete: if owner(uid) && id == 'main';
+    allow read,delete: if (owner(uid) || admin()) && id == 'main';
     allow create,update: if owner(uid) && id == 'main' && request.resource.data.keys().hasOnly(['values','updatedAt']) && parameters(request.resource.data.values) && text(request.resource.data.updatedAt,40);
    }
    match /results/{id} {
-    allow read,delete: if owner(uid);
+    allow read,delete: if owner(uid) || admin();
     allow create: if owner(uid) && request.resource.data.keys().hasAll(['missionId','name','financial','score','completedAt']) && request.resource.data.keys().hasOnly(['missionId','name','financial','score','completedAt']) && request.resource.data.missionId == id && text(request.resource.data.name,100) && request.resource.data.financial is map && request.resource.data.financial.size() <= 20 && request.resource.data.score is map && request.resource.data.score.size() <= 4 && text(request.resource.data.completedAt,40) && getAfter(/databases/$(database)/documents/users/$(uid)/missions/$(id)).data.completed == true;
    }
    match /history/{id} {
-    allow read,delete: if owner(uid);
+    allow read,delete: if owner(uid) || admin();
     allow create: if owner(uid) && request.resource.data.keys().hasAll(['missionId','name','score','completedAt']) && request.resource.data.keys().hasOnly(['missionId','name','score','completedAt']) && request.resource.data.missionId == id && text(request.resource.data.name,100) && request.resource.data.score is number && request.resource.data.score >= 0 && request.resource.data.score <= 100 && text(request.resource.data.completedAt,40) && getAfter(/databases/$(database)/documents/users/$(uid)/missions/$(id)).data.completed == true;
    }
   }

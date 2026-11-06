@@ -2,9 +2,12 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import {
   changeStudentAccess,
+  deleteStudent,
+  editStudentProfile,
   studentPage,
   type StudentAccount,
 } from "../../services/adminControl";
+import { UserCog, Trash2, Edit3 } from "lucide-react";
 const date = (value: number) =>
   value ? new Date(value).toLocaleString("pt-BR") : "Não disponível";
 export function AdminStudents({
@@ -22,6 +25,11 @@ export function AdminStudents({
   const [selected, setSelected] = useState("");
   const [reason, setReason] = useState("");
   const [days, setDays] = useState(30);
+  const [editingUid, setEditingUid] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [deletingUid, setDeletingUid] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
   const [busy, setBusy] = useState(false);
   async function load(email = applied, next = false) {
     setBusy(true);
@@ -167,16 +175,53 @@ export function AdminStudents({
               </div>
             </dl>
             {!isOwner && (
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => {
-                  setSelected(selected === student.uid ? "" : student.uid);
-                  setReason("");
+              <div
+                className="student-actions-row"
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  marginTop: "12px",
                 }}
               >
-                Gerenciar acesso
-              </button>
+                <button
+                  type="button"
+                  className={selected === student.uid ? "primary" : "secondary"}
+                  onClick={() => {
+                    setSelected(selected === student.uid ? "" : student.uid);
+                    setEditingUid("");
+                    setDeletingUid("");
+                    setReason("");
+                  }}
+                >
+                  <UserCog size={15} /> Gerenciar acesso
+                </button>
+                <button
+                  type="button"
+                  className={editingUid === student.uid ? "primary" : "secondary"}
+                  onClick={() => {
+                    setEditingUid(editingUid === student.uid ? "" : student.uid);
+                    setEditName(student.name);
+                    setEditEmail(student.email);
+                    setSelected("");
+                    setDeletingUid("");
+                  }}
+                >
+                  <Edit3 size={15} /> Editar dados
+                </button>
+                <button
+                  type="button"
+                  className="danger-button"
+                  onClick={() => {
+                    setDeletingUid(deletingUid === student.uid ? "" : student.uid);
+                    setDeleteReason("");
+                    setSelected("");
+                    setEditingUid("");
+                  }}
+                >
+                  <Trash2 size={15} /> Excluir aluno
+                </button>
+              </div>
             )}
             {selected === student.uid && (
               <div className="admin-access-form">
@@ -236,6 +281,143 @@ export function AdminStudents({
                   </button>
                 </div>
               </div>
+            )}
+            {editingUid === student.uid && (
+              <form
+                className="admin-access-form"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setBusy(true);
+                  try {
+                    await editStudentProfile(ownerUid, student, {
+                      name: editName,
+                      email: editEmail,
+                    });
+                    onMessage("Dados do aluno atualizados com sucesso.");
+                    setEditingUid("");
+                    await load();
+                  } catch (err) {
+                    onMessage(
+                      err instanceof Error
+                        ? err.message
+                        : "Erro ao atualizar os dados do aluno.",
+                    );
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                <h4>Editar dados do aluno</h4>
+                <label>
+                  Nome completo
+                  <input
+                    required
+                    minLength={2}
+                    maxLength={100}
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                  />
+                </label>
+                <label>
+                  E-mail do aluno
+                  <input
+                    type="email"
+                    required
+                    maxLength={254}
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                  />
+                </label>
+                <div className="actions" style={{ marginTop: "10px" }}>
+                  <button type="submit" className="primary" disabled={busy}>
+                    Salvar alterações
+                  </button>
+                  <button
+                    type="button"
+                    className="text-link"
+                    disabled={busy}
+                    onClick={() => setEditingUid("")}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            )}
+            {deletingUid === student.uid && (
+              <form
+                className="admin-access-form delete-warning"
+                style={{
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: "12px",
+                }}
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (
+                    !window.confirm(
+                      `ATENÇÃO: Confirma a exclusão definitiva do aluno "${student.name}" (${student.email})? Esta ação não pode ser desfeita.`
+                    )
+                  )
+                    return;
+                  setBusy(true);
+                  try {
+                    await deleteStudent(ownerUid, student, deleteReason);
+                    onMessage(`Aluno ${student.name} excluído com sucesso.`);
+                    setDeletingUid("");
+                    await load();
+                  } catch (err) {
+                    onMessage(
+                      err instanceof Error
+                        ? err.message
+                        : "Erro ao excluir o aluno.",
+                    );
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                <h4 style={{ color: "#991b1b", margin: "0 0 6px" }}>
+                  Excluir aluno permanentemente
+                </h4>
+                <p
+                  style={{
+                    color: "#7f1d1d",
+                    fontSize: "13px",
+                    margin: "0 0 12px",
+                  }}
+                >
+                  Esta ação removerá o perfil do aluno e todos os seus acessos
+                  na plataforma.
+                </p>
+                <label>
+                  Motivo da exclusão (obrigatório para auditoria)
+                  <textarea
+                    required
+                    minLength={5}
+                    maxLength={300}
+                    placeholder="Informe o motivo da exclusão"
+                    value={deleteReason}
+                    onChange={(e) => setDeleteReason(e.target.value)}
+                  />
+                </label>
+                <div className="actions" style={{ marginTop: "12px" }}>
+                  <button
+                    type="submit"
+                    className="button-danger"
+                    disabled={busy || deleteReason.trim().length < 5}
+                  >
+                    <Trash2 size={16} /> Confirmar exclusão do aluno
+                  </button>
+                  <button
+                    type="button"
+                    className="text-link"
+                    disabled={busy}
+                    onClick={() => setDeletingUid("")}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
             )}
           </article>
         );
