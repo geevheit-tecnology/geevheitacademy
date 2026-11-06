@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { currency, useBilling } from "../services/billing";
 import { FooterCredit } from "../components/FooterCredit";
 import {
@@ -11,8 +12,28 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AnimatedRoutePreview } from "../components/AnimatedRoutePreview";
+
 export function Landing() {
   const { config, loading, error, admin } = useBilling();
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+    const elements = document.querySelectorAll(".reveal-on-scroll");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -20px 0px" },
+    );
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <header className="public-header">
@@ -117,7 +138,7 @@ export function Landing() {
             </div>
           </div>
         </section>
-        <section className="trust-strip">
+        <section className="trust-strip reveal-on-scroll">
           <span>UMA VISÃO DE PONTA A PONTA</span>
           <b>Comercial</b>
           <ArrowRight />
@@ -127,7 +148,7 @@ export function Landing() {
           <ArrowRight />
           <b>Financeiro</b>
         </section>
-        <section className="section" id="metodo">
+        <section className="section reveal-on-scroll" id="metodo">
           <div className="section-title">
             <div>
               <span className="eyebrow">APRENDIZADO QUE SAI DO PAPEL</span>
@@ -174,7 +195,7 @@ export function Landing() {
             ))}
           </div>
         </section>
-        <section className="learning section" id="aprendizado">
+        <section className="learning section reveal-on-scroll" id="aprendizado">
           <div>
             <span className="eyebrow">DA TEORIA À DECISÃO</span>
             <h2>
@@ -207,7 +228,7 @@ export function Landing() {
             ))}
           </div>
         </section>
-        <section className="section training-benefits" id="treine-sua-equipe">
+        <section className="section training-benefits reveal-on-scroll" id="treine-sua-equipe">
           <span className="eyebrow">
             TREINAMENTO PARA A ROTINA DA SUA EMPRESA
           </span>
@@ -242,7 +263,7 @@ export function Landing() {
             Ler o manual e preparar minha equipe <ArrowRight size={17} />
           </Link>
         </section>
-        <section className="section commercial-offer" id="assinatura">
+        <section className="section commercial-offer reveal-on-scroll" id="assinatura">
           <div>
             <span className="eyebrow">COMECE COM 3 DIAS GRÁTIS</span>
             <h2>
@@ -292,7 +313,7 @@ export function Landing() {
             </small>
           </div>
         </section>
-        <section className="section platform-evolution">
+        <section className="section platform-evolution reveal-on-scroll">
           <span className="eyebrow">UMA PLATAFORMA EM EVOLUÇÃO</span>
           <h2>Cada vez mais perto da rotina de uma transportadora.</h2>
           <p>
