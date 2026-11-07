@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, Users, Target, RotateCcw } from "lucide-react";
 import { FooterCredit } from "../components/FooterCredit";
 import { trainingModes, difficultyRules } from "../domain/training";
+import { enterpriseWorkflow } from "../domain/workflow";
 export function Manual() {
   return (
     <main className="section manual-page">
@@ -15,6 +16,45 @@ export function Manual() {
         um ambiente de treinamento, com consequências visíveis em custo, prazo e
         qualidade.
       </p>
+      <div className="actions manual-tools">
+        <a className="primary" href="/manual-treinamento.pdf" download>Baixar manual em PDF</a>
+        <button className="secondary" onClick={() => window.print()}>Imprimir / salvar em PDF</button>
+      </div>
+      <section>
+        <h2>Primeiro treinamento: do cadastro ao resultado</h2>
+        <ol>
+          <li><b>Acesse sua conta.</b> Use Entrar ou Cadastre-se. Em Minha assinatura, confira o vencimento do teste ou da liberação. Se o acesso estiver bloqueado, procure o suporte.</li>
+          <li><b>Abra Nova missão.</b> Escolha o modo e a dificuldade. Preencha nome da missão, cliente, carga, veículo e motorista. Modo e dificuldade ficam fixos após o início.</li>
+          <li><b>Configure origem e destino.</b> Selecione a UF e filtre a cidade pelo nome. Selecione o município na lista. Adicione as paradas necessárias e calcule a rota; confira o trajeto e a distância antes de prosseguir.</li>
+          <li><b>Revise os custos.</b> Confira diesel, consumo, pedágio, diária, alimentação e prazo. Ao usar margem ou acréscimo, aplique o cálculo e confira o frete resultante.</li>
+          <li><b>Inicie a missão.</b> Leia a orientação da etapa, preencha os campos do registro e marque os itens do checklist. Salve o registro e avance somente após cumprir as exigências mostradas.</li>
+          <li><b>Negocie e acompanhe.</b> No comercial, revise preço e margem antes de fechar. No transporte, acompanhe a viagem, pausas e ocorrências. Registre a ação corretiva de cada pendência antes de continuar.</li>
+          <li><b>Conclua e compare.</b> Ao terminar as etapas do modo escolhido, abra o resultado e confira custos, prazo e pontuação. Consulte o histórico para retomar a análise e crie outra missão para testar uma melhoria.</li>
+        </ol>
+      </section>
+      <section>
+        <h2>Passo a passo dos 40 processos</h2>
+        <p>Operação completa: etapas 1 a 40. Comercial: 1 a 12. Transporte: 26 a 35. Siga os campos e as verificações de cada processo abaixo.</p>
+        {enterpriseWorkflow.map((stage, index) => (
+          <article className="manual-process" key={stage.name}>
+            <h3>{index + 1}. {stage.name} · {stage.department}</h3>
+            <p>{stage.action}</p>
+            <p><b>Preencha:</b> {stage.fields.map((field) => field.label).join("; ")}.</p>
+            <p><b>Confira antes de avançar:</b> {stage.checks.join("; ")}.</p>
+            <p><b>Por que fazer:</b> {stage.impact}</p>
+          </article>
+        ))}
+      </section>
+      <section>
+        <h2>Se algo impedir o avanço</h2>
+        <ul>
+          <li>Campos obrigatórios ou checklist incompleto: volte ao registro da etapa e confira as mensagens de validação.</li>
+          <li>Ocorrência pendente: registre o tratamento e a ação corretiva; no avançado, explique a solução com pelo menos 20 caracteres.</li>
+          <li>Cidades não carregam: confira a conexão e use Tentar novamente. Ao mudar de UF, escolha novamente a cidade.</li>
+          <li>Pix em conferência: aguarde a análise do administrador. Não faça outro pagamento para o mesmo pedido. Informar o comprovante não libera o acesso sozinho.</li>
+          <li>Falha de sincronização: confira a conexão e o aviso de salvamento antes de sair da missão.</li>
+        </ul>
+      </section>
       <section>
         <h2>Por que usar este método?</h2>
         <div className="feature-grid">

@@ -386,8 +386,8 @@ export function AdminStudents({
                     margin: "0 0 12px",
                   }}
                 >
-                  Esta ação removerá o perfil do aluno e todos os seus acessos
-                  na plataforma.
+                  Esta ação remove o perfil e bloqueia os treinamentos e novos pagamentos.
+                  O histórico de auditoria e o login no Firebase são preservados.
                 </p>
                 <label>
                   Motivo da exclusão (obrigatório para auditoria)

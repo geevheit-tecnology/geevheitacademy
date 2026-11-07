@@ -219,10 +219,17 @@ export async function deleteStudent(
   const batch = writeBatch(store);
 
   batch.delete(doc(store, "users", student.uid));
-  batch.delete(doc(store, "userAccess", student.uid));
+  // Keep a persistent block: deleting access would restore trial/paid access.
+  batch.set(doc(store, "userAccess", student.uid), {
+    blocked: true,
+    manualExpiresAt: Timestamp.fromMillis(0),
+    reason: cleanReason,
+    updatedBy: actorUid,
+    updatedAt: serverTimestamp(),
+  });
   batch.delete(doc(store, "subscriptions", student.uid));
   batch.delete(doc(store, "subscriptionPreferences", student.uid));
-  batch.delete(doc(store, "trials", student.uid));
+  // Retain the trial marker so the same identity cannot restart a free trial.
 
   batch.set(
     auditDocument(),

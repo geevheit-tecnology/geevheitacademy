@@ -170,7 +170,7 @@ export function PixQrCode({
         </div>
         <div className="pix-step">
           <span className="pix-step-num">3</span>
-          <span>Após pagar, confirme os dados abaixo para <b>liberação imediata</b></span>
+          <span>Após pagar, confirme os dados abaixo para <b>conferência do administrador</b></span>
         </div>
       </div>
     </div>

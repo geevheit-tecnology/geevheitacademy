@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   collection,
   getDocs,
@@ -11,6 +11,24 @@ import {
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { currency } from "../../services/billing";
+const actions: Record<string, string> = {
+  "access.grant": "Acesso liberado por prazo",
+  "access.revoke": "Liberação manual removida",
+  "access.block": "Treinamentos bloqueados",
+  "access.unblock": "Treinamentos desbloqueados",
+  "platform.update": "Controles gerais atualizados",
+  "billing.update": "Plano e Pix atualizados",
+  "payment.approved": "Pagamento aprovado",
+  "payment.rejected": "Pagamento rejeitado",
+  "student.edit": "Dados do aluno atualizados",
+  "student.delete": "Aluno excluído",
+};
+
+const normalize = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 export function AdminHistory({
   kind,
   onMessage,
@@ -18,22 +36,65 @@ export function AdminHistory({
   kind: "payments" | "audit";
   onMessage: (message: string) => void;
 }) {
+  const [search, setSearch] = useState("");
+  const [applied, setApplied] = useState("");
+  const requestId = useRef(0);
   const [items, setItems] = useState<DocumentData[]>([]);
   const [cursor, setCursor] = useState<QueryDocumentSnapshot<DocumentData>>();
   const [more, setMore] = useState(false);
   const [busy, setBusy] = useState(false);
-  async function load(next = false) {
+  async function load(next = false, filter = applied) {
     if (!db) return;
+    const currentRequest = ++requestId.current;
     setBusy(true);
+    if (kind === "audit") setItems([]);
     try {
+      if (kind === "audit") {
+        const matches: DocumentData[] = [];
+        const term = normalize(filter.trim());
+        let after: QueryDocumentSnapshot<DocumentData> | undefined;
+        // Search older pages too; Firestore has no substring search operator.
+        do {
+          const page = await getDocs(
+            query(
+              collection(db, "adminAudit"),
+              orderBy("at", "desc"),
+              ...(after ? [startAfter(after)] : []),
+              limit(term ? 100 : 5),
+            ),
+          );
+          if (currentRequest !== requestId.current) return;
+          for (const entry of page.docs) {
+            const item = entry.data();
+            const searchable = [
+              item.action,
+              actions[item.action],
+              item.details,
+              item.targetUid,
+              item.actorUid,
+            ]
+              .filter(Boolean)
+              .join(" ");
+            if (!term || normalize(searchable).includes(term))
+              matches.push({ ...item, id: entry.id });
+            if (matches.length === 5) break;
+          }
+          after = page.docs.at(-1);
+          if (!term || page.size < 100 || !after) break;
+        } while (matches.length < 5);
+        setItems(matches);
+        setMore(false);
+        return;
+      }
       const snapshots = await getDocs(
         query(
-          collection(db, kind === "audit" ? "adminAudit" : "paymentRequests"),
-          orderBy(kind === "audit" ? "at" : "createdAt", "desc"),
+          collection(db, "paymentRequests"),
+          orderBy("createdAt", "desc"),
           ...(next && cursor ? [startAfter(cursor)] : []),
           limit(25),
         ),
       );
+      if (currentRequest !== requestId.current) return;
       setItems((old) =>
         next
           ? [
@@ -48,31 +109,27 @@ export function AdminHistory({
       setCursor(snapshots.docs.at(-1));
       setMore(snapshots.size === 25);
     } catch {
-      onMessage("Não foi possível carregar o histórico.");
+      if (currentRequest === requestId.current)
+        onMessage("Não foi possível carregar o histórico.");
     } finally {
-      setBusy(false);
+      if (currentRequest === requestId.current) setBusy(false);
     }
   }
   useEffect(() => {
     setItems([]);
     setCursor(undefined);
-    void load();
+    setSearch("");
+    setApplied("");
+    void load(false, "");
+    return () => {
+      requestId.current++;
+    };
   }, [kind]);
   const statuses: Record<string, string> = {
     pending: "Pendente",
     approved: "Aprovado",
     rejected: "Rejeitado",
     canceled: "Cancelado pelo aluno",
-  };
-  const actions: Record<string, string> = {
-    "access.grant": "Acesso liberado por prazo",
-    "access.revoke": "Liberação manual removida",
-    "access.block": "Treinamentos bloqueados",
-    "access.unblock": "Treinamentos desbloqueados",
-    "platform.update": "Controles gerais atualizados",
-    "billing.update": "Plano e Pix atualizados",
-    "payment.approved": "Pagamento aprovado",
-    "payment.rejected": "Pagamento rejeitado",
   };
   return (
     <section>
@@ -90,7 +147,49 @@ export function AdminHistory({
           Atualizar histórico
         </button>
       </div>
-      {!busy && !items.length && <p>Nenhum registro disponível.</p>}
+      {kind === "audit" && (
+        <>
+          <form
+            className="admin-search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setApplied(search.trim());
+              void load(false, search.trim());
+            }}
+          >
+            <label>
+              Buscar na auditoria
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Ação, descrição ou identificador da conta"
+              />
+            </label>
+            <button className="secondary" disabled={busy}>
+              Buscar registros
+            </button>
+            <button
+              className="text-link"
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setSearch("");
+                setApplied("");
+                void load(false, "");
+              }}
+            >
+              Limpar busca
+            </button>
+          </form>
+          <p>
+            {applied
+              ? "Até 5 resultados da busca, do mais recente ao mais antigo."
+              : "Últimos 5 registros por ordem de chegada. Use a busca para consultar os anteriores."}
+          </p>
+        </>
+      )}
+      {!busy && !items.length && <p>Nenhum registro encontrado.</p>}
       {items.map((item) => (
         <article className="billing-card" key={item.id}>
           {kind === "audit" ? (
@@ -123,7 +222,7 @@ export function AdminHistory({
         </article>
       ))}
       {busy && <p role="status">Carregando histórico…</p>}
-      {more && (
+      {kind === "payments" && more && (
         <button
           className="secondary"
           disabled={busy}

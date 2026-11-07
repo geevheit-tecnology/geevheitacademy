@@ -65,3 +65,28 @@
 - [x] Validar 31 testes da aplicação e 14 de regras.
 - [x] Navegador integrado: modos comercial avançado e transporte, operação completa de 40 processos, negociação, trial, cancelamento, pagamento Pix, liberação/bloqueio administrativo, manutenção, auditoria e celular sem overflow.
 - [x] Central publicada no domínio principal, Vercel READY, regra ativa idêntica à validada e proprietário confirmado no Firebase. Evidência: `docs/qa/admin-production-verification.json`.
+
+
+## Correções 01 — 06/11/2026 (local)
+
+- [x] Exclusão de aluno: remover perfil e assinatura, manter bloqueio persistente e marcador de teste para impedir retorno ao treinamento.
+- [x] Impedir aprovação de pagamento para aluno bloqueado nas regras e na transação administrativa.
+- [x] Permitir desativar contratação mesmo sem preço/chave configurados.
+- [x] Substituir codificador QR próprio por biblioteca; testar decodificação independente do payload.
+- [x] Exibir QR ao abrir a assinatura; ocultar novo QR enquanto há pagamento em conferência.
+- [x] Corrigir texto que prometia liberação imediata: aprovação permanece manual.
+- [x] Ajustar alinhamento, quebra de textos e campos responsivos.
+- [x] Preservar consulta IBGE por UF e adicionar filtro de cidade sem distinção de acentos.
+- [x] Detalhar manual com início da missão, solução de problemas e 40 processos derivados do fluxo real.
+- [x] PDF gerado em `public/manual-treinamento.pdf`; manual sem overflow em 1440px e 390px (Chromium).
+- [x] Aplicação: 36 testes passaram; regras: 16 testes passaram em emulador demo.
+- [ ] Publicação do frontend e das regras Firebase (fora desta execução local).
+
+A exclusão no painel remove o cadastro operacional e bloqueia treinamentos/novos pagamentos. Não apaga a identidade Firebase Authentication nem históricos de auditoria e de missões. Excluir identidades requer backend privilegiado, inexistente neste frontend; não são expostas credenciais administrativas ao navegador.
+
+
+### Auditoria — limite e busca
+- [x] Exibir no máximo 5 registros, mais recentes primeiro.
+- [x] Buscar por ação, descrição ou conta em páginas antigas, mantendo até 5 resultados visíveis.
+- [x] Limpar busca retorna aos últimos 5; histórico de pagamentos mantém paginação própria.
+- [x] Teste de regressão cobre filtro sem acentos, consulta a páginas antigas, limite e limpeza da busca (37 testes da aplicação).

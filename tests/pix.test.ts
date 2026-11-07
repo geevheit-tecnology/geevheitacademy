@@ -1,3 +1,4 @@
+import jsQR from "jsqr";
 import { describe, it, expect } from "vitest";
 import { generatePixPayload, generateQrMatrix, generateQrPath, crc16 } from "../src/services/pix";
 
@@ -42,3 +43,20 @@ describe("Pix BR Code e QR Code", () => {
   });
 });
 
+
+it("decodifica o QR gerado e recupera o payload Pix exato", () => {
+  for (const key of ["pix@example.com", "+5511999999999", "123e4567-e89b-12d3-a456-426614174000"]) {
+    const payload = generatePixPayload({ key, name: "Academia", amount: 49.9 });
+    const matrix = generateQrMatrix(payload);
+    const scale = 6, margin = 4, size = (matrix.length + margin * 2) * scale;
+    const pixels = new Uint8ClampedArray(size * size * 4).fill(255);
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      const row = Math.floor(y / scale) - margin, col = Math.floor(x / scale) - margin;
+      if (matrix[row]?.[col]) {
+        const at = (y * size + x) * 4;
+        pixels[at] = pixels[at + 1] = pixels[at + 2] = 0;
+      }
+    }
+    expect(jsQR(pixels, size, size)?.data).toBe(payload);
+  }
+});

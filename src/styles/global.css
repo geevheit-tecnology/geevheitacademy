@@ -3421,3 +3421,23 @@ footer .developer-credit {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Consistent card alignment and long labels on narrow screens. */
+.feature-grid > *, .admin-access-dates > *, .panel-heading > *,
+.city-select > *, .pix-details-section { min-width: 0; }
+.feature-card { display: flex; flex-direction: column; align-items: flex-start; }
+.feature-card h3 { min-height: 2.6em; }
+.panel-heading { gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.admin-student h3, .admin-student p, .pix-meta-list dd { overflow-wrap: anywhere; }
+.city-select label { display: grid; gap: 8px; align-content: start; }
+.city-select input, .city-select select { width: 100%; min-width: 0; }
+.manual-process { padding-block: 16px; border-bottom: 1px solid var(--border); }
+.manual-process p { margin-block: 8px; }
+@media print {
+  .manual-page { max-width: none; padding: 0; color: #111; }
+  .manual-page .actions, .manual-page > a, .manual-page .developer-credit { display: none !important; }
+  .manual-page section { break-inside: auto; }
+  .manual-process, .manual-page li { break-inside: avoid; }
+  .manual-page h2, .manual-page h3 { break-after: avoid; }
+  @page { margin: 18mm; }
+}

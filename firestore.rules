@@ -24,7 +24,7 @@ service cloud.firestore {
   }
   match /trials/{uid} {
    allow read: if owner(uid) || admin();
-   allow create: if owner(uid) && request.resource.data.keys().hasOnly(['startedAt']) && request.resource.data.startedAt == request.time;
+   allow create: if owner(uid) && !blocked(uid) && request.resource.data.keys().hasOnly(['startedAt']) && request.resource.data.startedAt == request.time;
    allow update: if false;
    allow delete: if admin();
   }
@@ -36,7 +36,7 @@ service cloud.firestore {
   match /admins/{uid} { allow get: if owner(uid); allow list,write: if false; }
   match /billing/config {
    allow read: if true;
-   allow create,update: if admin() && request.resource.data.keys().hasOnly(['enabled','name','priceCents','days','pixKey','recipient']) && request.resource.data.enabled is bool && text(request.resource.data.name,100) && request.resource.data.priceCents is int && request.resource.data.priceCents > 0 && request.resource.data.priceCents <= 10000000 && request.resource.data.days is int && request.resource.data.days >= 1 && request.resource.data.days <= 366 && text(request.resource.data.pixKey,254) && text(request.resource.data.recipient,150);
+   allow create,update: if admin() && request.resource.data.keys().hasOnly(['enabled','name','priceCents','days','pixKey','recipient']) && request.resource.data.enabled is bool && text(request.resource.data.name,100) && request.resource.data.priceCents is int && (request.resource.data.enabled ? request.resource.data.priceCents > 0 : request.resource.data.priceCents >= 0) && request.resource.data.priceCents <= 10000000 && request.resource.data.days is int && request.resource.data.days >= 1 && request.resource.data.days <= 366 && request.resource.data.pixKey is string && request.resource.data.pixKey.size() <= 254 && request.resource.data.recipient is string && request.resource.data.recipient.size() <= 150 && (!request.resource.data.enabled || (text(request.resource.data.pixKey,254) && text(request.resource.data.recipient,150)));
   }
   match /subscriptions/{uid} {
    allow read: if owner(uid) || admin();
@@ -46,7 +46,7 @@ service cloud.firestore {
   match /paymentRequests/{id} {
    allow read: if request.auth != null && (resource.data.uid == request.auth.uid || admin());
    allow create: if request.auth != null && !blocked(request.auth.uid) && !cancellation(request.auth.uid) && request.resource.data.keys().hasOnly(['uid','email','status','priceCents','days','planName','createdAt','payerName','reference']) && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email && request.resource.data.status == 'pending' && text(request.resource.data.payerName,150) && text(request.resource.data.reference,150) && request.resource.data.createdAt == request.time && get(/databases/$(database)/documents/billing/config).data.enabled && request.resource.data.priceCents == get(/databases/$(database)/documents/billing/config).data.priceCents && request.resource.data.days == get(/databases/$(database)/documents/billing/config).data.days && request.resource.data.planName == get(/databases/$(database)/documents/billing/config).data.name;
-   allow update: if request.auth != null && resource.data.status == 'pending' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','reviewedBy','reviewedAt']) && request.resource.data.reviewedBy == request.auth.uid && request.resource.data.reviewedAt == request.time && ((admin() && request.resource.data.status in ['approved','rejected'] && (request.resource.data.status == 'rejected' || !cancellation(resource.data.uid))) || (owner(resource.data.uid) && request.resource.data.status == 'canceled' && getAfter(/databases/$(database)/documents/subscriptionPreferences/$(resource.data.uid)).data.canceled));
+   allow update: if request.auth != null && resource.data.status == 'pending' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','reviewedBy','reviewedAt']) && request.resource.data.reviewedBy == request.auth.uid && request.resource.data.reviewedAt == request.time && ((admin() && request.resource.data.status in ['approved','rejected'] && (request.resource.data.status == 'rejected' || !cancellation(resource.data.uid) && !blocked(resource.data.uid))) || (owner(resource.data.uid) && request.resource.data.status == 'canceled' && getAfter(/databases/$(database)/documents/subscriptionPreferences/$(resource.data.uid)).data.canceled));
   }
   function owner(uid) { return request.auth != null && request.auth.uid == uid; }
   function text(v,n) { return v is string && v.size() > 0 && v.size() <= n; }
@@ -112,7 +112,7 @@ service cloud.firestore {
   match /users/{uid} {
    allow read: if owner(uid) || admin();
    allow delete: if owner(uid) || admin();
-   allow create: if owner(uid) && profile();
+   allow create: if owner(uid) && !blocked(uid) && profile();
    allow update: if (owner(uid) && profile() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.email == resource.data.email) || (admin() && profile() && request.resource.data.createdAt == resource.data.createdAt);
    match /missions/{id} {
     allow read,delete: if owner(uid) || admin();

@@ -121,6 +121,9 @@ export function Admin() {
         const preferences = await tx.get(
           doc(database, "subscriptionPreferences", payment.uid),
         );
+        const access = await tx.get(doc(database, "userAccess", payment.uid));
+        if (approved && access.exists() && access.data().blocked)
+          throw new Error("student-blocked");
         if (approved && preferences.exists() && preferences.data().canceled)
           throw new Error("subscription-canceled");
         if (!snapshot.exists() || snapshot.data().status !== "pending")
@@ -159,9 +162,11 @@ export function Admin() {
           ? "Recebimento confirmado e assinatura liberada."
           : "Solicitação rejeitada.",
       );
-    } catch {
+    } catch (error) {
       setMessage(
-        "Não foi possível concluir. Atualize e confira se a solicitação já foi revisada.",
+        error instanceof Error && error.message === "student-blocked"
+          ? "Aluno bloqueado ou excluído. O pagamento não pode ser aprovado."
+          : "Não foi possível concluir. Confira se o aluno cancelou ou se o pedido já foi revisado.",
       );
     } finally {
       setBusy(false);
@@ -261,11 +266,11 @@ export function Admin() {
                   Valor em reais
                   <input
                     type="number"
-                    min="0.01"
+                    min={draft.enabled ? "0.01" : "0"}
                     max="100000"
                     step="0.01"
                     required
-                    value={draft.priceCents / 100 || ""}
+                    value={draft.priceCents / 100}
                     onChange={(e) =>
                       setDraft({
                         ...draft,
@@ -291,7 +296,7 @@ export function Admin() {
                 <label>
                   Chave Pix
                   <input
-                    required
+                    required={draft.enabled}
                     maxLength={254}
                     value={draft.pixKey}
                     onChange={(e) =>
@@ -302,7 +307,7 @@ export function Admin() {
                 <label>
                   Nome do favorecido
                   <input
-                    required
+                    required={draft.enabled}
                     maxLength={150}
                     value={draft.recipient}
                     onChange={(e) =>

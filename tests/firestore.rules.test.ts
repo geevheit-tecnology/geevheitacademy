@@ -532,3 +532,35 @@ it("rejeita números substituídos por texto, booleano, lista ou mapa", async ()
     await assertFails(setDoc(doc(db, "users/alice/missions", m.id), m));
   }
 });
+
+it("exclui perfil em lote mantendo bloqueio e impede retorno e aprovação de Pix", async () => {
+  const { writeBatch, Timestamp, serverTimestamp } = await import("firebase/firestore");
+  const uid = "deleted-student";
+  await env.withSecurityRulesDisabled(async (context) => {
+    const store = context.firestore();
+    await setDoc(doc(store, "users", uid), { name: "Aluno", email: "deleted@example.com", createdAt: new Date().toISOString() });
+    await setDoc(doc(store, "paymentRequests/deleted-pending"), { uid, status: "pending" });
+    await setDoc(doc(store, "trials", uid), { startedAt: Timestamp.now() });
+  });
+  const admin = env.authenticatedContext("operator", { email: "getuliopedromoreirafilho@gmail.com" }).firestore();
+  const student = env.authenticatedContext(uid, { email: "deleted@example.com" }).firestore();
+  const batch = writeBatch(admin);
+  batch.delete(doc(admin, "users", uid));
+  batch.delete(doc(admin, "subscriptions", uid));
+  batch.delete(doc(admin, "subscriptionPreferences", uid));
+  batch.set(doc(admin, "userAccess", uid), {
+    blocked: true, manualExpiresAt: Timestamp.fromMillis(0), reason: "Exclusão solicitada", updatedBy: "operator", updatedAt: serverTimestamp(),
+  });
+  await assertSucceeds(batch.commit());
+  await assertFails(setDoc(doc(student, "users", uid), { name: "Aluno", email: "deleted@example.com", createdAt: new Date().toISOString() }));
+  await assertFails(setDoc(doc(student, "users", uid, "missions", "new"), { ...createMission(defaults, 1), id: "new", revision: 1 }));
+  await assertFails(updateDoc(doc(admin, "paymentRequests/deleted-pending"), { status: "approved", reviewedBy: "operator", reviewedAt: serverTimestamp() }));
+  await assertFails(setDoc(doc(student, "userAccess", uid), { blocked: false }));
+});
+it("permite desativar cobrança sem exigir chave Pix e rejeita contratação desativada", async () => {
+  const { serverTimestamp } = await import("firebase/firestore");
+  const admin = env.authenticatedContext("operator", { email: "getuliopedromoreirafilho@gmail.com" }).firestore();
+  await assertSucceeds(setDoc(doc(admin, "billing/config"), { enabled: false, name: "Mensal", priceCents: 0, days: 30, pixKey: "", recipient: "" }));
+  const student = env.authenticatedContext("no-charge", { email: "no-charge@example.com" }).firestore();
+  await assertFails(setDoc(doc(student, "paymentRequests/disabled"), { uid: "no-charge", email: "no-charge@example.com", status: "pending", priceCents: 0, days: 30, planName: "Mensal", payerName: "Aluno", reference: "E123", createdAt: serverTimestamp() }));
+});

@@ -48,7 +48,7 @@ export function Subscription() {
     );
   }, [user]);
   async function request() {
-    if (!db || !user) return;
+    if (!db || !user || blocked || canceled || !config.enabled || pending || error) return;
     setBusy(true);
     setMessage("");
     try {
@@ -139,7 +139,7 @@ export function Subscription() {
         {!hasTrial && (
           <button
             className="primary"
-            disabled={busy || !!error}
+            disabled={busy || blocked || !!error}
             onClick={async () => {
               if (!user) return;
               setBusy(true);
@@ -220,13 +220,13 @@ export function Subscription() {
               </div>
             ) : null}
 
-            <PixQrCode
+            {!pending && <PixQrCode
               pixKey={config.pixKey}
               recipient={config.recipient}
               priceCents={config.priceCents}
               planName={config.name}
               onCopied={setMessage}
-            />
+            />}
 
             <form
               className="billing-form"

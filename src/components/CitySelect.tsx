@@ -18,8 +18,11 @@ export function CitySelect({
   onChange: (v: CityChoice) => void;
   disabled?: boolean;
 }) {
+  const [search, setSearch] = useState("");
+  const normalize = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const [states, setStates] = useState<State[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const visibleCities = cities.filter((city) => normalize(city.nome).includes(normalize(search)) || city.id === value.cityId);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -39,6 +42,7 @@ export function CitySelect({
   useEffect(() => {
     let active = true;
     setCities([]);
+    setSearch("");
     setLoading(true);
     setError("");
     getCities(value.uf)
@@ -75,6 +79,11 @@ export function CitySelect({
         </select>
       </label>
       <label>
+        {label} — buscar cidade
+        <input type="search" value={search} disabled={disabled || loading}
+          placeholder="Digite o nome da cidade" onChange={(event) => setSearch(event.target.value)} />
+      </label>
+      <label>
         {label} — cidade
         <select
           disabled={disabled || loading}
@@ -86,12 +95,12 @@ export function CitySelect({
           }}
         >
           <option value="">
-            {loading ? "Consultando IBGE…" : "Selecione a cidade"}
+            {loading ? "Consultando IBGE…" : visibleCities.length ? "Selecione a cidade" : "Nenhuma cidade encontrada"}
           </option>
           {value.cityId && !cities.some((c) => c.id === value.cityId) && (
             <option value={value.cityId}>{value.name}</option>
           )}
-          {cities.map((c) => (
+          {visibleCities.map((c) => (
             <option key={c.id} value={c.id}>
               {c.nome}
             </option>
